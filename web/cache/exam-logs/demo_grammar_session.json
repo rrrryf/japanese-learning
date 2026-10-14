@@ -1,0 +1,91 @@
+﻿{
+    "accuracy":  37.5,
+    "id":  "demo_grammar_session",
+    "modeLabel":  "文法专项",
+    "savedAt":  "2026-10-15T01:10:00",
+    "correct":  3,
+    "title":  "N2 练习卷 A",
+    "startedAt":  "2026-10-15T01:05:00",
+    "totalSeconds":  300,
+    "subjectFilter":  "grammar",
+    "examId":  "mock-n2-practice",
+    "questions":  [
+                      {
+                          "selected":  1,
+                          "answer":  1,
+                          "seconds":  20,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G1",
+                          "correct":  true,
+                          "index":  0
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  1,
+                          "seconds":  25,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G2",
+                          "correct":  false,
+                          "index":  1
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  1,
+                          "seconds":  30,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G3",
+                          "correct":  false,
+                          "index":  2
+                      },
+                      {
+                          "selected":  1,
+                          "answer":  1,
+                          "seconds":  35,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G4",
+                          "correct":  true,
+                          "index":  3
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  1,
+                          "seconds":  40,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G5",
+                          "correct":  false,
+                          "index":  4
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  1,
+                          "seconds":  45,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G6",
+                          "correct":  false,
+                          "index":  5
+                      },
+                      {
+                          "selected":  1,
+                          "answer":  1,
+                          "seconds":  50,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G7",
+                          "correct":  true,
+                          "index":  6
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  1,
+                          "seconds":  55,
+                          "subject":  "grammar",
+                          "questionTitle":  "demo G8",
+                          "correct":  false,
+                          "index":  7
+                      }
+                  ],
+    "total":  8,
+    "tag":  "N2",
+    "level":  "N2",
+    "blank":  0,
+    "finishedAt":  "2026-10-15T01:10:00"
+}

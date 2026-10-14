@@ -1,0 +1,192 @@
+{
+  "objectId": "mock-n2-practice",
+  "title": "N2 自建练习卷 A",
+  "tag": "N2",
+  "subjects": [
+    "vocabulary",
+    "grammar",
+    "reading"
+  ],
+  "questions": [
+    {
+      "id": "v1",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><ruby>増加<rt></rt></ruby>",
+      "options": [
+        "ぞうか",
+        "しょうか",
+        "ぞうが",
+        "そうか"
+      ],
+      "answer": 0,
+      "analysis": "「増加」读作「ぞうか」，表示增加。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "v2",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><ruby>豊富<rt></rt></ruby>",
+      "options": [
+        "ほうふ",
+        "ぼうふ",
+        "ほうぶ",
+        "ふほう"
+      ],
+      "answer": 0,
+      "analysis": "「豊富」读作「ほうふ」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "v3",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "（　　　）に入れるのに最もよいものを選びなさい。<br>彼の説明はとても（　　　）で、誰でも理解できた。",
+      "options": [
+        "明確",
+        "曖昧",
+        "複雑",
+        "抽象"
+      ],
+      "answer": 0,
+      "analysis": "「明確」= 清楚明确；与后半「谁都能理解」呼应。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "v4",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 用法",
+      "passage": "",
+      "title": "次の文の（　　　）に入れるのに最もよいものを選びなさい。<br>予定が（　　　）変更になった。",
+      "options": [
+        "急に",
+        "急いで",
+        "急ぎ",
+        "急な"
+      ],
+      "answer": 0,
+      "analysis": "副词「急に」修饰「変更になった」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "g1",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "次の文の（　　　）に入れるのに最もよいものを選びなさい。<br>このまま雨が降り続くと、試合が中止になる（　　　）。",
+      "options": [
+        "おそれがある",
+        "べきだ",
+        "ばかりだ",
+        "ところだ"
+      ],
+      "answer": 0,
+      "analysis": "「〜おそれがある」表示有不好的可能性。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "g2",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "次の文の（　　　）に入れるのに最もよいものを選びなさい。<br>彼は忙しい（　　　）、いつも笑顔で接してくれる。",
+      "options": [
+        "にもかかわらず",
+        "にしたがって",
+        "につれて",
+        "にしたら"
+      ],
+      "answer": 0,
+      "analysis": "「〜にもかかわらず」= 尽管……还是……。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "g3",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 排列",
+      "passage": "",
+      "title": "次の文を完成させなさい。<br>環境問題は ★ 考えなければならない。",
+      "options": [
+        "私たち一人一人が",
+        "真剣に",
+        "自分のこととして",
+        "もっと"
+      ],
+      "answer": 2,
+      "analysis": "合理顺序：私たち一人一人が / もっと / 自分のこととして / 真剣に → 入れ后与句意通顺；标答示意选关键填空位。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "r1",
+      "subject": "reading",
+      "sectionTitle": "读解 · 短文",
+      "passage": "外国語を学ぶとき、多くの人は短期間で成果を求めがちだ。しかし、言葉は毎日少しずつ触れることで身についていく。完璧を目指すより、続けられるペースを見つけることが上達への近道である。",
+      "title": "この文章で筆者が最も言いたいことは何か。",
+      "options": [
+        "外国語学習では継続が大切だ",
+        "辞書はもう必要ない",
+        "文法だけ覚えればよい",
+        "留学しなければ上達しない"
+      ],
+      "answer": 0,
+      "analysis": "短文强调每天坚持练习比短期突击更重要。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "r2",
+      "subject": "reading",
+      "sectionTitle": "读解 · 短文",
+      "passage": "外国語を学ぶとき、多くの人は短期間で成果を求めがちだ。しかし、言葉は毎日少しずつ触れることで身についていく。完璧を目指すより、続けられるペースを見つけることが上達への近道である。",
+      "title": "「続けられるペース」とあるが、それはどういう意味か。",
+      "options": [
+        "無理なく長期的に続けられる学習のリズム",
+        "できるだけ速い学習速度",
+        "週末だけ集中する勉強法",
+        "他人と同じ進度"
+      ],
+      "answer": 0,
+      "analysis": "指可持续、能长期坚持的节奏。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    }
+  ]
+}

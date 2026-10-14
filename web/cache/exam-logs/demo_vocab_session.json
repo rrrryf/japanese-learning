@@ -1,0 +1,109 @@
+﻿{
+    "accuracy":  60,
+    "id":  "demo_vocab_session",
+    "modeLabel":  "词汇专项",
+    "savedAt":  "2026-10-15T01:00:00",
+    "correct":  6,
+    "title":  "N2 练习卷 A",
+    "startedAt":  "2026-10-15T00:50:00",
+    "totalSeconds":  480,
+    "subjectFilter":  "vocabulary",
+    "examId":  "mock-n2-practice",
+    "questions":  [
+                      {
+                          "selected":  1,
+                          "answer":  0,
+                          "seconds":  30,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q1",
+                          "correct":  false,
+                          "index":  0
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  0,
+                          "seconds":  20,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q2",
+                          "correct":  true,
+                          "index":  1
+                      },
+                      {
+                          "selected":  2,
+                          "answer":  1,
+                          "seconds":  40,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q3",
+                          "correct":  false,
+                          "index":  2
+                      },
+                      {
+                          "selected":  1,
+                          "answer":  1,
+                          "seconds":  25,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q4",
+                          "correct":  true,
+                          "index":  3
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  0,
+                          "seconds":  18,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q5",
+                          "correct":  true,
+                          "index":  4
+                      },
+                      {
+                          "selected":  3,
+                          "answer":  2,
+                          "seconds":  55,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q6",
+                          "correct":  false,
+                          "index":  5
+                      },
+                      {
+                          "selected":  2,
+                          "answer":  2,
+                          "seconds":  22,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q7",
+                          "correct":  true,
+                          "index":  6
+                      },
+                      {
+                          "selected":  1,
+                          "answer":  0,
+                          "seconds":  33,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q8",
+                          "correct":  false,
+                          "index":  7
+                      },
+                      {
+                          "selected":  0,
+                          "answer":  0,
+                          "seconds":  15,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q9",
+                          "correct":  true,
+                          "index":  8
+                      },
+                      {
+                          "selected":  1,
+                          "answer":  1,
+                          "seconds":  19,
+                          "subject":  "vocabulary",
+                          "questionTitle":  "demo Q10",
+                          "correct":  true,
+                          "index":  9
+                      }
+                  ],
+    "total":  10,
+    "tag":  "N2",
+    "level":  "N2",
+    "blank":  0,
+    "finishedAt":  "2026-10-15T01:00:00"
+}

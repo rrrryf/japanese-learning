@@ -1,0 +1,91 @@
+{
+  "objectId": "mock-n3-practice",
+  "title": "N3 自建练习卷 A",
+  "tag": "N3",
+  "subjects": [
+    "vocabulary",
+    "grammar"
+  ],
+  "questions": [
+    {
+      "id": "n3v1",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><ruby>約束<rt></rt></ruby>",
+      "options": [
+        "やくそく",
+        "やくそう",
+        "やくそつ",
+        "やっそく"
+      ],
+      "answer": 0,
+      "analysis": "「約束」读作「やくそく」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n3v2",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇",
+      "passage": "",
+      "title": "（　　　）に入れるのに最もよいものを選びなさい。<br>明日は早く（　　　）ください。",
+      "options": [
+        "起きて",
+        "起こして",
+        "起き",
+        "起こり"
+      ],
+      "answer": 0,
+      "analysis": "「起きてください」= 请起床。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n3g1",
+      "subject": "grammar",
+      "sectionTitle": "文法",
+      "passage": "",
+      "title": "次の文の（　　　）に入れるのに最もよいものを選びなさい。<br>雨が降っている（　　　）、試合は中止になった。",
+      "options": [
+        "ので",
+        "のに",
+        "ても",
+        "たら"
+      ],
+      "answer": 0,
+      "analysis": "「〜ので」表示客观原因。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n3g2",
+      "subject": "grammar",
+      "sectionTitle": "文法",
+      "passage": "",
+      "title": "次の文の（　　　）に入れるのに最もよいものを選びなさい。<br>この本は日本語を勉強している人（　　　）役に立つ。",
+      "options": [
+        "にとって",
+        "によって",
+        "について",
+        "に対して"
+      ],
+      "answer": 0,
+      "analysis": "「〜にとって」= 对……来说。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    }
+  ]
+}
