@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Rao · 日语词典</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="appbar">
+      <a class="brand" href="#/" id="brand-link">Rao</a>
+      <nav class="appbar-nav">
+        <a href="#/" id="nav-search" class="nav-btn">查词</a>
+        <a href="#/study" id="nav-study" class="nav-btn">背单词</a>
+        <a href="#/grammar" id="nav-grammar" class="nav-btn">语法</a>
+        <a href="#/exam" id="nav-exam" class="nav-btn">真题</a>
+        <a href="#/favorites" id="nav-fav" class="nav-btn">☆ 生词本</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section id="view-search" class="view view-search">
+        <div class="search-panel">
+          <div class="searchbox">
+            <span class="icon" aria-hidden="true">🔍</span>
+            <input id="q" type="search" placeholder="食べる / たべる / 吃 / がる · 中文也可搜" autocomplete="off" enterkeyhint="search" autocapitalize="off" spellcheck="false" />
+            <button type="button" id="btn-clear" class="clear-btn" hidden aria-label="清除">×</button>
+          </div>
+          <div class="hot-row" id="hot-chips" aria-label="热词">
+            <button type="button" data-q="食べる">食べる</button>
+            <button type="button" data-q="日本">日本</button>
+            <button type="button" data-q="綺麗">綺麗</button>
+            <button type="button" data-q="勉強">勉強</button>
+            <button type="button" data-q="猫">猫</button>
+            <button type="button" data-q="ありがとう">ありがとう</button>
+            <button type="button" data-q="学校">学校</button>
+          </div>
+        </div>
+
+        <div class="daily-card" id="daily-card">
+          <div class="daily-top">
+            <div>
+              <div class="daily-title">每日计划</div>
+              <div class="daily-sub" id="daily-sub">选择 JLPT 等级，生成今日词表</div>
+            </div>
+            <div class="daily-progress-text" id="daily-progress-text">0/100</div>
+          </div>
+          <div class="daily-progress-bar"><span id="daily-bar"></span></div>
+          <div class="daily-controls">
+            <label class="daily-field">
+              <span>等级</span>
+              <select id="daily-level" aria-label="JLPT 等级">
+                <option value="N5">N5</option>
+                <option value="N4">N4</option>
+                <option value="N3">N3</option>
+                <option value="N2">N2</option>
+                <option value="N1">N1</option>
+              </select>
+            </label>
+            <label class="daily-field">
+              <span>数量</span>
+              <input id="daily-quota" type="number" min="10" max="200" value="100" aria-label="每日词数" />
+            </label>
+            <button type="button" class="daily-btn ghost" id="btn-daily-gen">生成今日</button>
+            <button type="button" class="daily-btn primary" id="btn-daily-start" disabled>开始今日</button>
+          </div>
+          <p class="daily-hint" id="daily-hint"></p>
+        </div>
+
+
+        <div class="weakness-card" id="weakness-card">
+          <div class="weakness-top">
+            <div>
+              <div class="weakness-title">薄弱点 · 复盘</div>
+              <div class="weakness-sub" id="weakness-sub">根据真题错题自动分析</div>
+            </div>
+            <button type="button" class="daily-btn ghost" id="btn-weakness-refresh">刷新</button>
+          </div>
+          <div class="weakness-bars" id="weakness-bars"></div>
+          <ul class="weakness-suggestions" id="weakness-suggestions"></ul>
+          <p class="weakness-hint" id="weakness-hint"></p>
+        </div>
+
+        <div class="results-panel" id="results-wrap" hidden>
+          <ul id="results" class="cand-list"></ul>
+          <div id="grammar-section" class="grammar-section" hidden>
+            <div class="grammar-section-title">语法</div>
+            <ul id="grammar-list" class="cand-list grammar-list"></ul>
+          </div>
+        </div>
+        <p id="search-hint" class="hint">输入日语、假名或中文释义开始查词</p>
+      </section>
+
+      <section id="view-detail" class="view view-detail hidden">
+        <header class="detail-topbar">
+          <button type="button" class="back" id="btn-back">← 返回</button>
+          <span class="detail-topbar-label">词条</span>
+        </header>
+        <article id="detail" class="card detail-card"></article>
+      </section>
+
+      <section id="view-favorites" class="view view-fav hidden">
+        <div class="page-title">
+          <h1>生词本</h1>
+          <p>保存在本机浏览器</p>
+        </div>
+        <div class="results-panel" id="fav-wrap" hidden>
+          <ul id="fav-list" class="cand-list"></ul>
+        </div>
+        <p id="fav-empty" class="hint hidden">还没有收藏，去查词后点「收藏」吧。</p>
+      </section>
+
+      <section id="view-study" class="view view-study hidden">
+        <div id="study-home" class="study-home">
+          <div class="page-title">
+            <h1>背单词</h1>
+            <p>生词本或 JLPT 词表 · 轻量复习</p>
+          </div>
+
+          <div class="review-card" id="review-card">
+            <div class="review-top">
+              <div>
+                <div class="review-title">复习已背</div>
+                <div class="review-sub" id="review-sub">SRS 中已学过的词（box ≥ 1）</div>
+              </div>
+              <div class="review-count" id="review-count">0</div>
+            </div>
+            <button type="button" class="study-start" id="btn-review-start" disabled>开始复习</button>
+            <p class="hint review-empty" id="review-empty">还没有已背单词，先去背几轮吧。</p>
+          </div>
+
+          <div class="study-sources" id="study-sources">
+            <button type="button" class="study-source" data-source="favorites">
+              <span class="ss-title">生词本</span>
+              <span class="ss-count" id="count-fav">0</span>
+            </button>
+            <button type="button" class="study-source" data-source="N5">
+              <span class="ss-title">JLPT N5</span>
+              <span class="ss-count" id="count-N5">—</span>
+            </button>
+            <button type="button" class="study-source" data-source="N4">
+              <span class="ss-title">JLPT N4</span>
+              <span class="ss-count" id="count-N4">—</span>
+            </button>
+            <button type="button" class="study-source" data-source="N3">
+              <span class="ss-title">JLPT N3</span>
+              <span class="ss-count" id="count-N3">—</span>
+            </button>
+            <button type="button" class="study-source" data-source="N2">
+              <span class="ss-title">JLPT N2</span>
+              <span class="ss-count" id="count-N2">—</span>
+            </button>
+            <button type="button" class="study-source" data-source="N1">
+              <span class="ss-title">JLPT N1</span>
+              <span class="ss-count" id="count-N1">—</span>
+            </button>
+          </div>
+          <p id="study-home-hint" class="hint">选择词库后点「开始」</p>
+          <button type="button" class="study-start" id="btn-study-start" disabled>开始</button>
+        </div>
+
+        <div id="study-session" class="study-session hidden">
+          <div class="study-progress">
+            <div class="study-progress-bar"><span id="study-bar"></span></div>
+            <span id="study-progress-text">0/0</span>
+          </div>
+          <button type="button" class="flashcard" id="flashcard" aria-label="点击显示释义">
+            <div class="fc-word" id="fc-word"></div>
+            <div class="fc-kana" id="fc-kana"></div>
+            <div class="fc-accent" id="fc-accent" hidden></div>
+            <div class="fc-meaning hidden" id="fc-meaning">
+              <div class="fc-gloss" id="fc-gloss"></div>
+            </div>
+            <div class="fc-tap" id="fc-tap">点击显示释义</div>
+          </button>
+          <div class="study-actions">
+            <button type="button" class="study-btn unknown" id="btn-unknown">不认识</button>
+            <button type="button" class="study-btn known" id="btn-known">认识</button>
+          </div>
+        </div>
+
+        <div id="study-end" class="study-end hidden">
+          <div class="page-title">
+            <h1>本轮结束</h1>
+            <p id="study-end-stats">认识 0 · 不认识 0</p>
+          </div>
+          <div class="study-end-actions">
+            <button type="button" class="study-start" id="btn-study-again">再来一次</button>
+            <button type="button" class="study-secondary" id="btn-study-home">回首页</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-grammar" class="view view-grammar hidden">
+        <div id="grammar-home" class="grammar-home">
+          <div class="page-title">
+            <h1>语法</h1>
+            <p>句型检索 · N 级分类</p>
+          </div>
+          <div class="searchbox grammar-searchbox">
+            <span class="icon" aria-hidden="true">🔍</span>
+            <input id="grammar-q" type="search" placeholder="搜句型，如 たい / ばかり / わけ" autocomplete="off" enterkeyhint="search" autocapitalize="off" spellcheck="false" />
+            <button type="button" id="btn-grammar-clear" class="clear-btn" hidden aria-label="清除">×</button>
+          </div>
+          <div class="grammar-level-chips" id="grammar-level-chips" role="tablist" aria-label="JLPT 等级">
+            <button type="button" class="grammar-level-chip" data-level="all">全部</button>
+            <button type="button" class="grammar-level-chip" data-level="N5">N5</button>
+            <button type="button" class="grammar-level-chip" data-level="N4">N4</button>
+            <button type="button" class="grammar-level-chip" data-level="N3">N3</button>
+            <button type="button" class="grammar-level-chip selected" data-level="N2">N2</button>
+            <button type="button" class="grammar-level-chip" data-level="N1">N1</button>
+            <button type="button" class="grammar-level-chip" data-level="unknown">未分级</button>
+          </div>
+          <p class="grammar-list-meta" id="grammar-list-meta"></p>
+          <ul id="grammar-browse-list" class="cand-list grammar-browse-list"></ul>
+          <button type="button" class="grammar-more" id="btn-grammar-more" hidden>加载更多</button>
+          <p id="grammar-browse-empty" class="hint hidden">没有匹配的语法</p>
+        </div>
+
+      </section>
+
+      <section id="view-grammar-detail" class="view view-detail view-grammar-detail hidden">
+        <header class="detail-topbar">
+          <button type="button" class="back" id="btn-grammar-back">← 返回</button>
+          <span class="detail-topbar-label">语法</span>
+        </header>
+        <article id="grammar-detail" class="card detail-card"></article>
+      </section>
+
+      <section id="view-exam" class="view view-exam hidden">
+        <div id="exam-home" class="exam-home">
+          <div class="page-title">
+            <h1>真题练习</h1>
+            <p>JLPT 历年真题 · 整卷 / 专项训练</p>
+          </div>
+          <label class="exam-level-field">
+            <span>等级</span>
+            <select id="exam-level" aria-label="JLPT 等级">
+              <option value="N5">N5</option>
+              <option value="N4">N4</option>
+              <option value="N3">N3</option>
+              <option value="N2" selected>N2</option>
+              <option value="N1">N1</option>
+            </select>
+          </label>
+          <div class="exam-drill" id="exam-drill">
+            <div class="exam-drill-label">专项训练</div>
+            <div class="exam-drill-chips" id="exam-drill-chips" role="group" aria-label="专项训练">
+              <button type="button" class="exam-drill-chip selected" data-subject="">整卷</button>
+              <button type="button" class="exam-drill-chip" data-subject="vocabulary">文字·词汇</button>
+              <button type="button" class="exam-drill-chip" data-subject="grammar">文法</button>
+              <button type="button" class="exam-drill-chip" data-subject="reading">读解</button>
+              <button type="button" class="exam-drill-chip" data-subject="listening">听力</button>
+            </div>
+            <p class="exam-drill-hint">选专项后再点下方卷子，只练该科；整卷则做全套</p>
+          </div>
+          <ul id="exam-list" class="exam-list"></ul>
+          <p id="exam-empty" class="hint hidden">加载失败或该等级暂无卷子。</p>
+          <div class="exam-history" id="exam-history">
+            <div class="exam-history-label">历史记录</div>
+            <ul id="exam-history-list" class="exam-history-list"></ul>
+            <p id="exam-history-empty" class="exam-history-empty hint">交卷后会出现在这里</p>
+          </div>
+        </div>
+
+        <div id="exam-session" class="exam-session hidden">
+          <div class="exam-topbar">
+            <button type="button" class="back" id="btn-exam-back">← 返回</button>
+            <div class="exam-title" id="exam-title"></div>
+            <span class="exam-progress-text" id="exam-progress-text">0/0</span>
+          </div>
+          <div class="exam-progress-bar"><span id="exam-bar"></span></div>
+
+          <div class="exam-card">
+            <div class="exam-subject" id="exam-subject"></div>
+            <div class="exam-media" id="exam-media" hidden>
+              <audio id="exam-audio" controls preload="none"></audio>
+            </div>
+            <div class="exam-transcript" id="exam-transcript" hidden>
+              <details class="exam-details">
+                <summary>听力原文</summary>
+                <div class="exam-subtitle" id="exam-subtitle"></div>
+              </details>
+              <details class="exam-details">
+                <summary>中文翻译</summary>
+                <div class="exam-translation" id="exam-translation"></div>
+              </details>
+            </div>
+            <div class="exam-passage" id="exam-passage" hidden></div>
+            <div class="exam-question" id="exam-question"></div>
+            <div class="exam-options" id="exam-options"></div>
+          </div>
+
+          <div class="exam-actions">
+            <button type="button" class="study-btn unknown" id="btn-exam-prev">上一题</button>
+            <button type="button" class="study-btn known" id="btn-exam-next">下一题</button>
+            <button type="button" class="exam-submit" id="btn-exam-submit">交卷</button>
+          </div>
+        </div>
+
+        <div id="exam-result" class="exam-result hidden">
+          <div class="page-title">
+            <h1>交卷完成</h1>
+            <p id="exam-result-stats"></p>
+          </div>
+          <div id="exam-result-timing" class="exam-result-timing" hidden></div>
+          <div class="exam-actions">
+            <button type="button" class="exam-submit" id="btn-exam-home">再选一套</button>
+          </div>
+          <div id="exam-review" class="exam-review"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      数据 <strong>JMdict</strong>（
+      <a href="https://www.edrdg.org/" target="_blank" rel="noopener">EDRDG</a>
+      ）· CC-BY-SA 4.0
+      · 例句 <strong>Tatoeba</strong> · CC-BY 2.0 FR
+      · 等级 <strong>JLPT vocab</strong>
+      · 中文释义/音调/语法句型 <strong>Japanese-Chinese-thesaurus</strong>
+      · 本机词典 · 生词本 · 真题练习
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

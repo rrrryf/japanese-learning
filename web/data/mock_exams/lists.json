@@ -1,0 +1,27 @@
+{
+  "N2": [
+    {
+      "objectId": "mock-n2-practice",
+      "id": "mock-n2-practice",
+      "_id": "mock-n2-practice",
+      "tag": "N2",
+      "title": "N2 自建练习卷 A",
+      "isFree": true,
+      "hasPractice": true
+    }
+  ],
+  "N3": [
+    {
+      "objectId": "mock-n3-practice",
+      "id": "mock-n3-practice",
+      "_id": "mock-n3-practice",
+      "tag": "N3",
+      "title": "N3 自建练习卷 A",
+      "isFree": true,
+      "hasPractice": true
+    }
+  ],
+  "N1": [],
+  "N4": [],
+  "N5": []
+}
