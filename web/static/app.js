@@ -147,7 +147,7 @@
   let grammarQuery = "";
   let grammarLoading = false;
   let grammarLevel = "N2";
-  /** 真题刷题 state */
+  /** 模考刷题 state */
   const EXAM_SUBJECT_LABEL = {
     vocabulary: "文字·词汇",
     grammar: "文法",
@@ -308,7 +308,7 @@
       el.weaknessBars.appendChild(row);
     });
     if (el.weaknessSub) {
-      el.weaknessSub.textContent = (data && data.summary) || "根据真题错题自动分析";
+      el.weaknessSub.textContent = (data && data.summary) || "根据模考错题自动分析";
     }
     if (el.weaknessSuggestions) {
       el.weaknessSuggestions.innerHTML = "";
@@ -348,7 +348,7 @@
     }
     if (el.weaknessHint) {
       if (!any) {
-        el.weaknessHint.textContent = "还没有足够的真题记录。去「真题」做一套专项后回来刷新。";
+        el.weaknessHint.textContent = "还没有足够的模考记录。去「模考」做一套专项后回来刷新。";
       } else if (data && data.bias_daily_vocab) {
         el.weaknessHint.textContent = "检测到词汇偏弱：生成今日词表时会更偏向未学 / 到期复习。";
       } else {
@@ -1835,7 +1835,7 @@
     }
   }
 
-  // ============ 真题练习 ============
+  // ============ 模考练习 ============
 
   function showExamPane(pane) {
     if (!el.examHome) return;
