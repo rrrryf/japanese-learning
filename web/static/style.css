@@ -1017,6 +1017,53 @@ body.detail-screen .appbar-nav {
   display: none !important;
 }
 
+.fc-gloss-zh {
+  font-size: clamp(20px, 1.8vw, 24px);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.fc-gloss-zh::before {
+  content: "中文";
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+  color: #0b6e4f;
+  background: rgba(11, 110, 79, 0.12);
+}
+
+.fc-gloss-zh.empty::before {
+  content: "暂无中文";
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.fc-gloss-en {
+  margin-top: 10px;
+  font-size: clamp(14px, 1.3vw, 16px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.fc-gloss-en::before {
+  content: "英文补充";
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  opacity: 0.9;
+}
+
 .fc-gloss {
   font-size: clamp(20px, 1.8vw, 24px);
   font-weight: 600;
@@ -1547,7 +1594,7 @@ body.detail-screen .appbar-nav {
   }
 }
 
-/* —— 真题练习 —— */
+/* —— 模考练习 —— */
 .view-exam {
   padding: 20px var(--content-pad) 40px;
   max-width: var(--app-max);

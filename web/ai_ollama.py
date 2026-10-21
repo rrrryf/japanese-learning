@@ -11,7 +11,17 @@ from typing import Any
 
 OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "http://127.0.0.1:11434").rstrip("/")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "tinyswallow")
-OLLAMA_TIMEOUT = int(os.environ.get("OLLAMA_TIMEOUT", "120"))
+
+
+def _env_timeout() -> int:
+    raw = os.environ.get("OLLAMA_TIMEOUT", "120")
+    try:
+        return max(5, min(int(raw), 600))
+    except (TypeError, ValueError):
+        return 120
+
+
+OLLAMA_TIMEOUT = _env_timeout()
 
 
 class OllamaError(Exception):

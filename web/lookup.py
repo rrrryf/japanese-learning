@@ -2,8 +2,9 @@
 """JMdict lookup: search candidates and word detail."""
 from __future__ import annotations
 
-import sys
 import sqlite3
+import sys
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +19,7 @@ from db import get_connection
 from pos_map import map_pos_list
 from romaji import kana_to_romaji
 
-_conn: sqlite3.Connection | None = None
+_tls = threading.local()
 
 # Display order for conjugation grid (subset + rest)
 _CONJ_ORDER = [
@@ -37,10 +38,21 @@ _CONJ_ORDER = [
 
 
 def _db() -> sqlite3.Connection:
-    global _conn
-    if _conn is None:
-        _conn = get_connection()
-    return _conn
+    """Thread-local read-only connection. A dead handle is reopened."""
+    conn = getattr(_tls, "conn", None)
+    if conn is not None:
+        try:
+            conn.execute("SELECT 1")
+            return conn
+        except sqlite3.Error:
+            _tls.conn = None
+            try:
+                conn.close()
+            except sqlite3.Error:
+                pass
+    conn = get_connection()
+    _tls.conn = conn
+    return conn
 
 
 def _split_pipe(value: str | None) -> list[str]:
@@ -82,10 +94,36 @@ def _lookup_jlpt(conn: sqlite3.Connection, forms: list[str]) -> str | None:
     return None
 
 
+def _norm_form(s: str) -> str:
+    """Lightweight key normalize for gloss_zh matching (no meaning change)."""
+    s = (s or "").strip()
+    for ch in ("・", "･", " ", "　", "ー", "ｰ"):
+        s = s.replace(ch, "")
+    return s
+
+
 def _lookup_gloss_zh(
     conn: sqlite3.Connection, forms: list[str]
 ) -> tuple[str | None, str | None]:
+    """Exact form first, then normalized, then common stem X曜 ← X曜日."""
+    tried: set[str] = set()
+    candidates: list[str] = []
     for form in forms:
+        form = (form or "").strip()
+        if not form:
+            continue
+        for c in (form, _norm_form(form)):
+            if c and c not in tried:
+                tried.add(c)
+                candidates.append(c)
+        # weekday stem already backfilled; keep runtime fallback
+        if form.endswith("曜") and not form.endswith("曜日"):
+            c = form + "日"
+            if c not in tried:
+                tried.add(c)
+                candidates.append(c)
+
+    for form in candidates:
         row = conn.execute(
             "SELECT accent, gloss FROM gloss_zh WHERE word_form = ?", (form,)
         ).fetchone()
@@ -626,15 +664,25 @@ def list_jlpt(level: str, limit: int = 30) -> list[dict[str, Any]]:
         if not word_form:
             word_form = kanji_list[0] if kanji_list else (kana_list[0] if kana_list else str(seq))
         kana = kana_list[0] if kana_list else ""
-        forms = _unique_forms([word_form], kanji_list, kana_list)
-        accent, _zh = _lookup_gloss_zh(conn, forms)
+        extra_forms = [
+            row["word_form"]
+            for row in conn.execute(
+                "SELECT DISTINCT word_form FROM word_forms WHERE seq = ?", (seq,)
+            )
+        ]
+        forms = _unique_forms([word_form], kanji_list, kana_list, extra_forms)
+        accent, gloss_zh = _lookup_gloss_zh(conn, forms)
+        gloss_en = _first_sense_gloss(conn, seq)
+        gloss_first = (gloss_zh or "").strip() or gloss_en
         results.append(
             {
                 "seq": seq,
                 "word_form": word_form,
                 "kana": kana,
                 "accent": accent,
-                "gloss_first": _gloss_first_for_search(conn, seq, forms),
+                "gloss_zh": gloss_zh,
+                "gloss_en": gloss_en or None,
+                "gloss_first": gloss_first,
             }
         )
     return results

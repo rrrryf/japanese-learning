@@ -1,17 +1,18 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """FastAPI app: Japanese learning (local JMdict + mock JLPT + Ollama)."""
 from __future__ import annotations
 
 import json
-import re
-from datetime import datetime
+import sqlite3
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+
+from db import DatabaseUnavailable
 
 from lookup import get_word, get_grammar, grammar_counts, jlpt_counts, list_grammar, list_jlpt, search, search_grammar
 from ai_ollama import (
@@ -23,7 +24,7 @@ from ai_ollama import (
     OLLAMA_MODEL,
 )
 import mock_exam
-from weakness import analyze_log_dir, analyze_sessions
+from weakness import analyze_log_dir, analyze_sessions, load_sessions, save_session
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 CACHE_DIR = Path(__file__).resolve().parent / "cache"
@@ -31,6 +32,16 @@ EXAM_LOG_DIR = CACHE_DIR / "exam-logs"
 EXAM_LOG_MAX_BYTES = 2 * 1024 * 1024
 
 app = FastAPI(title="日语学习", version="1.0.0")
+
+
+@app.exception_handler(DatabaseUnavailable)
+async def database_unavailable(_request: Request, exc: DatabaseUnavailable):
+    return JSONResponse(status_code=503, content={"detail": str(exc)})
+
+
+@app.exception_handler(sqlite3.Error)
+async def sqlite_unavailable(_request: Request, _exc: sqlite3.Error):
+    return JSONResponse(status_code=503, content={"detail": "词典数据库暂时不可用"})
 
 
 @app.get("/api/search")
@@ -179,13 +190,7 @@ def api_exam_list(level: str = Query("N2", min_length=2, max_length=2)):
     try:
         return {"list": mock_exam.fetch_exam_list(level_u)}
     except mock_exam.MockExamError as e:
-        raise HTTPException(status_code=502, detail=str(e)) from e
-
-
-def _safe_exam_log_slug(value: str, fallback: str = "session") -> str:
-    text = re.sub(r"[^\w\u4e00-\u9fff\-]+", "_", (value or "").strip(), flags=re.UNICODE)
-    text = text.strip("_")[:80]
-    return text or fallback
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 @app.post("/api/exam/log")
@@ -199,74 +204,16 @@ async def api_exam_log_save(request: Request):
         raise HTTPException(status_code=400, detail=f"invalid JSON: {e}") from e
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="body must be a JSON object")
-
-    EXAM_LOG_DIR.mkdir(parents=True, exist_ok=True)
-    now = datetime.now()
-    stamp = now.strftime("%Y%m%d-%H%M%S")
-    exam_id = _safe_exam_log_slug(str(payload.get("examId") or "unknown"), "unknown")
-    subject = payload.get("subjectFilter")
-    mode = _safe_exam_log_slug(str(subject or "full"), "full")
-    filename = f"{stamp}_{exam_id}_{mode}.json"
-    path = EXAM_LOG_DIR / filename
-
-    if "savedAt" not in payload:
-        payload["savedAt"] = now.isoformat(timespec="seconds")
-    if "id" not in payload:
-        payload["id"] = f"{stamp}_{exam_id}_{mode}"
-
-    text = json.dumps(payload, ensure_ascii=False, indent=2)
-    path.write_text(text, encoding="utf-8")
-
-    jsonl_path = EXAM_LOG_DIR / "sessions.jsonl"
-    with jsonl_path.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(payload, ensure_ascii=False) + "\n")
-
-    return {"ok": True, "file": filename, "path": str(path)}
+    try:
+        return save_session(EXAM_LOG_DIR, payload)
+    except OSError as e:
+        raise HTTPException(status_code=500, detail="failed to save exam log") from e
 
 
 @app.get("/api/exam/logs")
 def api_exam_logs(limit: int = Query(20, ge=1, le=100)):
-    EXAM_LOG_DIR.mkdir(parents=True, exist_ok=True)
-    sessions: list[dict[str, Any]] = []
-
-    jsonl_path = EXAM_LOG_DIR / "sessions.jsonl"
-    if jsonl_path.is_file():
-        try:
-            lines = jsonl_path.read_text(encoding="utf-8").splitlines()
-            for line in reversed(lines):
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    obj = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if isinstance(obj, dict):
-                    sessions.append(obj)
-                if len(sessions) >= limit:
-                    break
-        except OSError:
-            sessions = []
-
-    if not sessions:
-        files = sorted(
-            EXAM_LOG_DIR.glob("*.json"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        for path in files:
-            if path.name == "sessions.jsonl":
-                continue
-            try:
-                obj = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            if isinstance(obj, dict):
-                sessions.append(obj)
-            if len(sessions) >= limit:
-                break
-
-    return {"list": sessions[:limit], "count": len(sessions[:limit])}
+    sessions = load_sessions(EXAM_LOG_DIR, limit=limit)
+    return {"list": sessions, "count": len(sessions)}
 
 
 
@@ -353,4 +300,3 @@ def grammar_page():
 
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-

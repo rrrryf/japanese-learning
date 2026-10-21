@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+import re
+import threading
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +47,70 @@ SUBJECT_ACTIONS = {
 }
 
 
+LOG_LOCK = threading.Lock()
+
+
+def _safe_slug(value: str, fallback: str = "session") -> str:
+    text = re.sub(r"[^\w\u4e00-\u9fff\-]+", "_", (value or "").strip(), flags=re.UNICODE)
+    text = text.strip("_")[:80]
+    return text or fallback
+
+
+def _mtime(path: Path) -> float:
+    try:
+        return path.stat().st_mtime
+    except OSError:
+        return 0.0
+
+
+def _as_int(value: Any, default: int = 0) -> int:
+    if isinstance(value, bool) or value is None:
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def save_session(log_dir: Path, payload: dict[str, Any]) -> dict[str, Any]:
+    """Write one exam session. Concurrent saves get distinct files."""
+    log_dir.mkdir(parents=True, exist_ok=True)
+    now = datetime.now()
+    stamp = now.strftime("%Y%m%d-%H%M%S")
+    ms = f"{now.microsecond // 1000:03d}"
+    exam_id = _safe_slug(str(payload.get("examId") or "unknown"), "unknown")
+    mode = _safe_slug(str(payload.get("subjectFilter") or "full"), "full")
+    if "savedAt" not in payload:
+        payload["savedAt"] = now.isoformat(timespec="seconds")
+
+    with LOG_LOCK:
+        filename = f"{stamp}-{ms}_{exam_id}_{mode}.json"
+        path = log_dir / filename
+        n = 1
+        while path.exists():
+            filename = f"{stamp}-{ms}_{exam_id}_{mode}_{n}.json"
+            path = log_dir / filename
+            n += 1
+        if "id" not in payload:
+            payload["id"] = path.stem
+        jsonl_path = log_dir / "sessions.jsonl"
+        try:
+            path.write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            with jsonl_path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+                f.flush()
+        except OSError:
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                pass
+            raise
+    return {"ok": True, "file": filename}
+
+
 def _norm_subject(raw: Any) -> str | None:
     if raw is None:
         return None
@@ -66,6 +133,11 @@ def _norm_subject(raw: Any) -> str | None:
 
 def load_sessions(log_dir: Path, limit: int = 50) -> list[dict[str, Any]]:
     log_dir.mkdir(parents=True, exist_ok=True)
+    with LOG_LOCK:
+        return _load_sessions_unlocked(log_dir, limit)
+
+
+def _load_sessions_unlocked(log_dir: Path, limit: int) -> list[dict[str, Any]]:
     sessions: list[dict[str, Any]] = []
     jsonl = log_dir / "sessions.jsonl"
     if jsonl.is_file():
@@ -88,7 +160,7 @@ def load_sessions(log_dir: Path, limit: int = 50) -> list[dict[str, Any]]:
     if len(sessions) < limit:
         files = sorted(
             (p for p in log_dir.glob("*.json") if p.name != "sessions.jsonl"),
-            key=lambda p: p.stat().st_mtime,
+            key=_mtime,
             reverse=True,
         )
         seen_ids = {str(s.get("id") or "") for s in sessions}
@@ -124,10 +196,11 @@ def analyze_sessions(sessions: list[dict[str, Any]]) -> dict[str, Any]:
         if not isinstance(qs, list):
             # session-level fallback
             subj = _norm_subject(sess.get("subjectFilter") or sess.get("subject"))
-            total = int(sess.get("total") or 0)
-            correct = int(sess.get("correct") or 0)
+            total = max(0, _as_int(sess.get("total")))
+            correct = min(max(0, _as_int(sess.get("correct"))), total)
+            blank = min(max(0, _as_int(sess.get("blank"))), max(0, total - correct))
             if subj and total > 0 and subj in stats:
-                wrong = max(0, total - correct - int(sess.get("blank") or 0))
+                wrong = max(0, total - correct - blank)
                 stats[subj]["total"] += total
                 stats[subj]["correct"] += correct
                 stats[subj]["wrong"] += wrong
@@ -223,7 +296,7 @@ def analyze_sessions(sessions: list[dict[str, Any]]) -> dict[str, Any]:
         "summary": (
             f"基于 {session_count} 次练习、{question_count} 题"
             if session_count
-            else "暂无练习记录，先去做几套真题专项"
+            else "暂无练习记录，先去做几套模考专项"
         ),
     }
 

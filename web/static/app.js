@@ -39,6 +39,8 @@
     fcKana: document.getElementById("fc-kana"),
     fcAccent: document.getElementById("fc-accent"),
     fcMeaning: document.getElementById("fc-meaning"),
+    fcGlossZh: document.getElementById("fc-gloss-zh"),
+    fcGlossEn: document.getElementById("fc-gloss-en"),
     fcGloss: document.getElementById("fc-gloss"),
     fcTap: document.getElementById("fc-tap"),
     studyBar: document.getElementById("study-bar"),
@@ -557,20 +559,57 @@
     renderCurrentCard();
   }
 
+  function firstEnglishGloss(data) {
+    if (data.gloss_en && String(data.gloss_en).trim()) return String(data.gloss_en).trim();
+    const g =
+      data.senses && data.senses[0] && data.senses[0].gloss && data.senses[0].gloss[0];
+    return g ? String(g).trim() : "";
+  }
+
   function cardFromWord(data) {
     const word_form =
       (data.kanji && data.kanji[0]) || (data.kana && data.kana[0]) || String(data.seq);
     const kana = (data.kana && data.kana[0]) || "";
-    const gloss_first =
-      (data.gloss_zh && String(data.gloss_zh).trim()) ||
-      (data.senses && data.senses[0] && data.senses[0].gloss && data.senses[0].gloss[0]) ||
-      "";
+    const gloss_zh = (data.gloss_zh && String(data.gloss_zh).trim()) || "";
+    const gloss_en = firstEnglishGloss(data);
+    const gloss_first = gloss_zh || gloss_en || "";
     return {
       seq: data.seq,
       word_form,
       kana,
       accent: (data.accent || "").trim() || null,
+      gloss_zh: gloss_zh || null,
+      gloss_en: gloss_en || null,
       gloss_first,
+    };
+  }
+
+  function looksEnglishGloss(s) {
+    const t = String(s || "").trim();
+    if (!t) return false;
+    const ascii = [...t].filter((ch) => /[A-Za-z]/.test(ch)).length;
+    return ascii >= Math.max(3, Math.floor(t.length / 2));
+  }
+
+  function normalizeStudyCard(card) {
+    if (!card) return card;
+    let gloss_zh = (card.gloss_zh && String(card.gloss_zh).trim()) || "";
+    let gloss_en = (card.gloss_en && String(card.gloss_en).trim()) || "";
+    const gloss_first = (card.gloss_first && String(card.gloss_first).trim()) || "";
+    // Older cached daily cards may only have gloss_first (zh or en).
+    if (!gloss_zh && !gloss_en && gloss_first) {
+      if (looksEnglishGloss(gloss_first)) gloss_en = gloss_first;
+      else gloss_zh = gloss_first;
+    } else if (!gloss_zh && gloss_first && !looksEnglishGloss(gloss_first)) {
+      gloss_zh = gloss_first;
+    } else if (!gloss_en && gloss_first && looksEnglishGloss(gloss_first)) {
+      gloss_en = gloss_first;
+    }
+    return {
+      ...card,
+      gloss_zh: gloss_zh || null,
+      gloss_en: gloss_en || null,
+      gloss_first: gloss_zh || gloss_en || gloss_first || "",
     };
   }
 
@@ -812,7 +851,7 @@
     const res = await fetch(`/api/jlpt?level=${encodeURIComponent(source)}&limit=100`);
     if (!res.ok) throw new Error("jlpt fetch failed");
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? data.map(normalizeStudyCard) : [];
   }
 
   async function startSession(source) {
@@ -873,7 +912,32 @@
       el.fcAccent.hidden = true;
       el.fcAccent.textContent = "";
     }
-    el.fcGloss.textContent = card.gloss_first || "（无释义）";
+    const c = normalizeStudyCard(card);
+    sessionQueue[sessionIndex] = c;
+    const zh = (c.gloss_zh || "").trim();
+    const en = (c.gloss_en || "").trim();
+    if (el.fcGlossZh) {
+      if (zh) {
+        el.fcGlossZh.textContent = zh;
+        el.fcGlossZh.classList.remove("empty");
+      } else {
+        el.fcGlossZh.textContent = "词典暂无中文词义";
+        el.fcGlossZh.classList.add("empty");
+      }
+    }
+    if (el.fcGlossEn) {
+      if (en && en !== zh) {
+        el.fcGlossEn.hidden = false;
+        el.fcGlossEn.textContent = en;
+      } else {
+        el.fcGlossEn.hidden = true;
+        el.fcGlossEn.textContent = "";
+      }
+    }
+    if (el.fcGloss) {
+      el.fcGloss.hidden = true;
+      el.fcGloss.textContent = c.gloss_first || "";
+    }
     if (el.fcMeaning) el.fcMeaning.classList.add("hidden");
     if (el.fcTap) el.fcTap.textContent = "点击显示释义";
     const total = sessionQueue.length;
@@ -933,13 +997,17 @@
         fetch(`/api/search?q=${encodeURIComponent(q)}&limit=10`),
         fetch(`/api/grammar?q=${encodeURIComponent(q)}&limit=15`),
       ]);
+      if (q !== lastQuery) return;
+      if (!wordRes.ok) throw new Error("search failed");
       const data = await wordRes.json();
       const grammar = gramRes.ok ? await gramRes.json() : [];
       if (q !== lastQuery) return;
-      renderResults(data, el.results, null);
-      renderGrammar(Array.isArray(grammar) ? grammar : []);
-      const hasWords = data.length > 0;
-      const hasGrammar = Array.isArray(grammar) && grammar.length > 0;
+      const words = Array.isArray(data) ? data : [];
+      const grams = Array.isArray(grammar) ? grammar : [];
+      renderResults(words, el.results, null);
+      renderGrammar(grams);
+      const hasWords = words.length > 0;
+      const hasGrammar = grams.length > 0;
       if (hasWords || hasGrammar) {
         el.resultsWrap.hidden = false;
         el.hint.classList.add("hidden");
@@ -950,6 +1018,7 @@
         el.hint.classList.remove("hidden");
       }
     } catch (err) {
+      if (q !== lastQuery) return;
       el.hint.textContent = "搜索失败，请确认后端已启动";
       el.hint.classList.remove("hidden");
       el.resultsWrap.hidden = true;
@@ -1421,7 +1490,10 @@
         ${enSenses ? `<div class="ld-sub">英文补充</div>${enSenses}` : ""}
       `;
     } else {
-      meaningInner = enSenses || `<p class="ld-empty">无释义</p>`;
+      meaningInner = `
+        <p class="ld-empty">暂无中文词义（本地日中词典未收录）</p>
+        ${enSenses ? `<div class="ld-sub">英文补充</div>${enSenses}` : `<p class="ld-empty">无释义</p>`}
+      `;
     }
 
     const otherWritings = [...(data.kanji || []), ...(data.kana || [])].filter(
@@ -1908,7 +1980,11 @@
   }
 
   async function persistExamLog(entry) {
-    saveExamLogLocal(entry);
+    try {
+      saveExamLogLocal(entry);
+    } catch (e) {
+      console.warn("exam log local save failed", e);
+    }
     try {
       const res = await fetch("/api/exam/log", {
         method: "POST",
@@ -2030,9 +2106,12 @@
       if (!res.ok) throw new Error(await readError(res));
       const data = await res.json();
       const allQs = Array.isArray(data.questions) ? data.questions : [];
-      if (!allQs.length) throw new Error("没有题目");
+      if (!allQs.length) {
+        throw new Error(data.incomplete ? "题目加载不完整，请重试" : "没有题目");
+      }
       let questions = allQs;
       let title = data.title || "";
+      if (data.incomplete) title = `${title}（部分题目未加载，重新进入可重试）`;
       if (drill) {
         questions = allQs.filter((q) => q.subject === drill);
         const label = EXAM_SUBJECT_LABEL[drill] || drill;
@@ -2114,7 +2193,8 @@
 
     el.examOptions.innerHTML = "";
     const selected = examAnswers[examIndex];
-    q.options.forEach((opt, i) => {
+    const opts = Array.isArray(q.options) ? q.options : [];
+    opts.forEach((opt, i) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "exam-option" + (i === selected ? " selected" : "");
