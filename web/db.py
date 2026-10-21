@@ -2,15 +2,18 @@
 """Read-only SQLite connection for JMdict."""
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
-# Prefer project-root jmdict.db; fall back to web/jmdict.db
+# Prefer project-root jmdict.db; fall back to web/jmdict.db.
+# JMDICT_DB overrides both.
 _ROOT = Path(__file__).resolve().parent.parent
 _WEB = Path(__file__).resolve().parent
-DB_PATH = _ROOT / "jmdict.db"
-if not DB_PATH.is_file():
-    DB_PATH = _WEB / "jmdict.db"
+_DEFAULT = _ROOT / "jmdict.db"
+if not _DEFAULT.is_file():
+    _DEFAULT = _WEB / "jmdict.db"
+DB_PATH = Path(os.environ.get("JMDICT_DB") or _DEFAULT)
 
 
 class DatabaseUnavailable(Exception):
@@ -22,7 +25,7 @@ def get_connection() -> sqlite3.Connection:
     if not DB_PATH.is_file():
         raise DatabaseUnavailable(
             f"词典数据库不存在：{DB_PATH.name}\n"
-            "Place jmdict.db at project root (see README), or build via build_db.py."
+            "把 jmdict.db 放在仓库根目录，或设置环境变量 JMDICT_DB。"
         )
     uri = f"file:{DB_PATH.as_posix()}?mode=ro"
     try:

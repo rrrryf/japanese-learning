@@ -12,6 +12,7 @@ venv/
 **/在线题库_config.json
 web/在线题库.py
 web/cache/在线题库/
+web/cache/audio/
 
 # Large / personal
 jmdict.db

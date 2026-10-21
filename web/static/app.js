@@ -726,8 +726,66 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
+
+  // ---- 模考富文本白名单清洗 ----------------------------------------------
+  // 后端 在线题库.py:_strip_scripts() 是正则黑名单，`\s+on[a-z]+\s*=` 要求 on 前有
+  // 空白，`<svg/onload=alert(1)>` 用 `/` 分隔即可整体绕过；<style>/<form> 也不在
+  // 移除名单里。模考题干/原文/翻译/解析都是第三方 HTML，进 innerHTML 前必须逐节点
+  // 重建：<template> 惰性解析不会执行脚本、不会加载资源，只留白名单标签与属性。
+  const EXAM_ALLOW_TAGS = new Set([
+    "B", "STRONG", "I", "EM", "U", "S", "DEL", "INS", "BR", "P", "DIV", "SPAN",
+    "SMALL", "SUB", "SUP", "MARK", "RUBY", "RB", "RT", "RP", "OL", "UL", "LI",
+    "BLOCKQUOTE", "IMG",
+  ]);
+  const EXAM_ALLOW_ATTRS = { IMG: ["src", "alt"] };
+
+  function sanitizeExamHtml(html) {
+    if (html == null || html === "") return "";
+    const tpl = document.createElement("template");
+    tpl.innerHTML = String(html);
+
+    const rebuild = (parent) => {
+      const frag = document.createDocumentFragment();
+      Array.from(parent.childNodes).forEach((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          frag.appendChild(document.createTextNode(child.nodeValue));
+          return;
+        }
+        if (child.nodeType !== Node.ELEMENT_NODE) return; // 注释 / CDATA 一律丢弃
+        const tag = child.tagName.toUpperCase();
+        if (!EXAM_ALLOW_TAGS.has(tag)) {
+          // 标签本身不保留，但内部文本继续处理（<script> 文本随之变成纯文本）
+          frag.appendChild(rebuild(child));
+          return;
+        }
+        const keep = document.createElement(tag.toLowerCase());
+        const extra = EXAM_ALLOW_ATTRS[tag] || [];
+        Array.from(child.attributes).forEach((attr) => {
+          const name = attr.name.toLowerCase();
+          if (name.startsWith("on") || name === "style" || name === "srcdoc") return;
+          if (name !== "class" && !extra.includes(name)) return;
+          if (name === "src" && !/^https:\/\//i.test(attr.value.trim())) return;
+          keep.setAttribute(name, attr.value);
+        });
+        if (tag === "IMG") {
+          keep.setAttribute("loading", "lazy");
+          keep.setAttribute("referrerpolicy", "no-referrer");
+        }
+        keep.appendChild(rebuild(child));
+        frag.appendChild(keep);
+      });
+      return frag;
+    };
+
+    const holder = document.createElement("div");
+    holder.appendChild(rebuild(tpl.content));
+    return holder.innerHTML;
+  }
+  // 供离线单测调用（static/ 下无构建系统，暴露一个钩子比复制一份逻辑更可靠）
+  window.__sanitizeExamHtml = sanitizeExamHtml;
 
   function route() {
     const hash = location.hash || "#/";
@@ -1357,20 +1415,28 @@
   }
 
 
+  // 快速连点词条时，慢的旧响应会覆盖新页面，并让 AI 上下文指向另一个词。
+  // 用单调递增的 token 丢弃过期响应，aiSeq 只在确认渲染时才切换。
+  let detailToken = 0;
+
   async function openDetail(seq) {
+    const token = ++detailToken;
     show("detail");
     el.detailBox.innerHTML = "<p class='hint'>加载中…</p>";
-    aiSeq = Number(seq);
-    aiHistory = [];
     try {
       const res = await fetch(`/api/word/${encodeURIComponent(seq)}`);
+      if (token !== detailToken) return;
       if (!res.ok) {
         el.detailBox.innerHTML = "<p class='hint'>未找到该词条</p>";
         return;
       }
       const data = await res.json();
+      if (token !== detailToken) return;
+      aiSeq = Number(seq);
+      aiHistory = [];
       renderDetail(data);
     } catch (err) {
+      if (token !== detailToken) return;
       el.detailBox.innerHTML = "<p class='hint'>加载失败</p>";
       console.error(err);
     }
@@ -1527,6 +1593,10 @@
               : ""
           }
           ${tags ? `<div class="tags">${tags}</div>` : ""}
+          <div class="ld-audio">
+            <button type="button" class="ld-audio-btn" id="btn-audio" aria-label="播放发音">🔊 发音</button>
+            <audio id="ld-audio-el" preload="none"></audio>
+          </div>
         </header>
 
         <section class="ld-section">
@@ -1583,7 +1653,35 @@
       btn.textContent = on ? "★ 已收藏" : "☆ 收藏";
     });
 
+    bindDetailAudio(data.seq);
     bindWordAiControls();
+  }
+
+  // 发音：首次点击才请求 /api/audio/{seq}（服务端落盘后永久离线可用）。
+  // 拿不到音频就整块隐藏——不打扰阅读。
+  function bindDetailAudio(seq) {
+    const audioBtn = document.getElementById("btn-audio");
+    const audioEl = document.getElementById("ld-audio-el");
+    if (!audioBtn || !audioEl) return;
+    audioEl.addEventListener(
+      "error",
+      () => {
+        const wrap = audioBtn.closest(".ld-audio");
+        if (wrap) wrap.hidden = true;
+      },
+      { once: true }
+    );
+    audioBtn.addEventListener("click", () => {
+      if (!audioEl.getAttribute("src")) {
+        audioEl.src = `/api/audio/${encodeURIComponent(seq)}`;
+      }
+      try {
+        audioEl.currentTime = 0;
+        audioEl.play().catch(() => {});
+      } catch (_) {
+        /* 播放被拒绝时静默 */
+      }
+    });
   }
 
   async function renderFavorites() {
@@ -2170,8 +2268,8 @@
       }
       if (el.examTranscript) {
         el.examTranscript.hidden = false;
-        if (el.examSubtitle) el.examSubtitle.innerHTML = q.subtitle || "";
-        if (el.examTranslation) el.examTranslation.innerHTML = q.translation || "";
+        if (el.examSubtitle) el.examSubtitle.innerHTML = sanitizeExamHtml(q.subtitle);
+        if (el.examTranslation) el.examTranslation.innerHTML = sanitizeExamHtml(q.translation);
       }
     } else {
       if (el.examMedia) el.examMedia.hidden = true;
@@ -2183,13 +2281,13 @@
     }
 
     if (q.passage) {
-      el.examPassage.innerHTML = q.passage;
+      el.examPassage.innerHTML = sanitizeExamHtml(q.passage);
       el.examPassage.hidden = false;
     } else {
       el.examPassage.hidden = true;
       el.examPassage.innerHTML = "";
     }
-    el.examQuestion.innerHTML = q.title || "";
+    el.examQuestion.innerHTML = sanitizeExamHtml(q.title);
 
     el.examOptions.innerHTML = "";
     const selected = examAnswers[examIndex];
@@ -2308,11 +2406,27 @@
       examSeconds.reduce((sum, s) => sum + (s || 0), 0)
     );
     const stats = { total, correct, blank, totalSeconds };
+    // 先建日志并落盘，再渲染：renderExamReview 一旦抛异常，不能把成绩/复查/日志一起带走
+    try {
+      persistExamLog(buildExamLogEntry(stats));
+    } catch (err) {
+      console.error("exam log build failed", err);
+    }
     el.examResultStats.textContent = `答对 ${correct} / ${total} · 未答 ${blank}`;
-    renderExamResultTiming(stats);
-    renderExamReview();
-    const entry = buildExamLogEntry(stats);
-    persistExamLog(entry);
+    try {
+      renderExamResultTiming(stats);
+    } catch (err) {
+      console.error("timing render failed", err);
+    }
+    try {
+      renderExamReview();
+    } catch (err) {
+      console.error("review render failed", err);
+      if (el.examReview) {
+        el.examReview.innerHTML =
+          `<div class="rv-empty">复查渲染失败：${escapeHtml(err && err.message ? err.message : err)}</div>`;
+      }
+    }
     showExamPane("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -2328,14 +2442,14 @@
       const div = document.createElement("div");
       div.className = "exam-review-item " + (ok ? "ok" : "bad");
       let html = `<div class="rv-head"><span class="rv-no">第 ${i + 1} 题</span><span class="rv-subj">${escapeHtml(subj)}</span><span class="rv-mark">${ok ? "✓ 答对" : sel == null ? "— 未答" : "✗ 答错"}</span><span class="eh-meta">${sec}s</span></div>`;
-      if (q.passage) html += `<div class="rv-passage">${q.passage}</div>`;
+      if (q.passage) html += `<div class="rv-passage">${sanitizeExamHtml(q.passage)}</div>`;
       if (q.audioUrl) {
         html += `<div class="rv-audio"><audio controls preload="none" src="${escapeHtml(q.audioUrl)}"></audio></div>`;
       }
-      html += `<div class="rv-question">${q.title || ""}</div>`;
+      html += `<div class="rv-question">${sanitizeExamHtml(q.title)}</div>`;
       html +=
         `<div class="rv-options">` +
-        q.options
+        (Array.isArray(q.options) ? q.options : [])
           .map((opt, oi) => {
             let cls = "";
             if (oi === q.answer) cls = "correct";
@@ -2345,10 +2459,10 @@
           .join("") +
         `</div>`;
       if (q.subtitle) {
-        html += `<div class="rv-transcript"><strong>原文</strong>${q.subtitle}</div>`;
+        html += `<div class="rv-transcript"><strong>原文</strong>${sanitizeExamHtml(q.subtitle)}</div>`;
       }
       if (q.translation) {
-        html += `<div class="rv-transcript"><strong>翻译</strong>${q.translation}</div>`;
+        html += `<div class="rv-transcript"><strong>翻译</strong>${sanitizeExamHtml(q.translation)}</div>`;
       }
       if (q.analysis) {
         html += `<div class="rv-analysis"><strong>解析</strong>${escapeHtml(q.analysis).replace(/\n/g, "<br>")}</div>`;

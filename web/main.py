@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,7 @@ from ai_ollama import (
     OLLAMA_MODEL,
 )
 import mock_exam
+import audio_module
 from weakness import analyze_log_dir, analyze_sessions, load_sessions, save_session
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -32,6 +34,12 @@ EXAM_LOG_DIR = CACHE_DIR / "exam-logs"
 EXAM_LOG_MAX_BYTES = 2 * 1024 * 1024
 
 app = FastAPI(title="日语学习", version="1.0.0")
+
+
+@lru_cache(maxsize=1024)
+def get_word_cached(seq: int) -> dict[str, Any] | None:
+    """Process-local cache for read-only word details."""
+    return get_word(seq)
 
 
 @app.exception_handler(DatabaseUnavailable)
@@ -120,7 +128,7 @@ def api_ai_status():
 def api_ai_explain(body: AiExplainBody):
     word_data = None
     if body.seq is not None:
-        word_data = get_word(int(body.seq))
+        word_data = get_word_cached(int(body.seq))
         if word_data is None:
             raise HTTPException(status_code=404, detail="word not found")
     elif not (body.word and body.word.strip()):
@@ -176,10 +184,46 @@ def api_ai_grammar(body: AiGrammarBody):
 
 @app.get("/api/word/{seq}")
 def api_word(seq: int):
-    data = get_word(seq)
+    data = get_word_cached(seq)
     if data is None:
         raise HTTPException(status_code=404, detail="word not found")
     return data
+
+
+@app.get("/api/audio/{seq}")
+def api_audio(seq: int, voice: str = Query(audio_module.DEFAULT_VOICE)):
+    """Word audio. The first request downloads an mp3; later requests stay local."""
+    if voice not in audio_module.VOICES:
+        raise HTTPException(status_code=400, detail="unsupported voice")
+    data = get_word_cached(seq)
+    if data is None:
+        raise HTTPException(status_code=404, detail="word not found")
+    kanji = data.get("kanji") or []
+    kana = data.get("kana") or []
+    form = (kanji[0] if kanji else (kana[0] if kana else "")).strip()
+    if not form:
+        raise HTTPException(status_code=404, detail="word has no readable form")
+    path = audio_module.fetch_cached(form, voice)
+    if path is None:
+        raise HTTPException(status_code=404, detail="audio unavailable")
+    return FileResponse(
+        path,
+        media_type="audio/mpeg",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
+@app.get("/api/audio-status")
+def api_audio_status():
+    return audio_module.audio_status()
+
+
+@app.post("/api/cache/clear")
+def api_cache_clear():
+    """Drop the in-memory word cache after rebuilding jmdict.db."""
+    before = get_word_cached.cache_info()
+    get_word_cached.cache_clear()
+    return {"ok": True, "cleared": before.currsize}
 
 
 @app.get("/api/exam/list")

@@ -29,6 +29,15 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* 全局兜底：带 hidden 属性的元素必须真正隐藏。
+   类选择器的 display 会盖掉 UA 的 [hidden]{display:none}——例如
+   .exam-transcript{display:flex} 会让非听力题残留上一题的「听力原文/中文翻译」。
+   此处用 !important 一次修掉，.clear-btn[hidden] / .grammar-section[hidden] /
+   .fc-accent[hidden] 三处局部补丁因此变成冗余（保留不影响行为）。 */
+[hidden] {
+  display: none !important;
+}
+
 body {
   font-family: "PingFang SC", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
     "Noto Sans JP", "Microsoft YaHei", system-ui, sans-serif;
@@ -2634,4 +2643,29 @@ body.detail-screen .shell {
     margin-left: var(--content-pad);
     margin-right: var(--content-pad);
   }
+}
+
+/* 词条发音：详情页头部的一行小按钮，音频元素本身不占位 */
+.ld-audio {
+  margin-top: 10px;
+}
+.ld-audio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--fill);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.ld-audio-btn:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.ld-audio audio {
+  display: none;
 }
