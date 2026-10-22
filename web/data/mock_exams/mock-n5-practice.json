@@ -1,0 +1,252 @@
+{
+  "objectId": "mock-n5-practice",
+  "title": "N5 自建练习卷 A",
+  "tag": "N5",
+  "subjects": [
+    "vocabulary",
+    "grammar",
+    "reading"
+  ],
+  "questions": [
+    {
+      "id": "n5-v1",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>厚い</u>",
+      "options": [
+        "あつい",
+        "ことば",
+        "ひく",
+        "たつ"
+      ],
+      "answer": 0,
+      "analysis": "「厚い」读作「あつい」，意思是「厚的」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-v2",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>言葉</u>",
+      "options": [
+        "あつい",
+        "ことば",
+        "ひく",
+        "たつ"
+      ],
+      "answer": 1,
+      "analysis": "「言葉」读作「ことば」，意思是「话，语言；说法，措辞」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-v3",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>引く</u>",
+      "options": [
+        "ことば",
+        "あつい",
+        "ひく",
+        "たつ"
+      ],
+      "answer": 2,
+      "analysis": "「引く」读作「ひく」，意思是「拉，拽；引起；吸引」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-v4",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>立つ</u>",
+      "options": [
+        "ひく",
+        "あつい",
+        "ことば",
+        "たつ"
+      ],
+      "answer": 3,
+      "analysis": "「立つ」读作「たつ」，意思是「站立；出发，离开」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-v5",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>音楽</u>",
+      "options": [
+        "おんがく",
+        "あつい",
+        "ことば",
+        "ひく"
+      ],
+      "answer": 0,
+      "analysis": "「音楽」读作「おんがく」，意思是「音乐」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-v6",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>全部</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "全部",
+        "厚的",
+        "话，语言；说法，措辞",
+        "拉，拽；引起；吸引"
+      ],
+      "answer": 0,
+      "analysis": "「全部」（ぜんぶ）的意思是「全部」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-v7",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>名前</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "厚的",
+        "名字",
+        "话，语言；说法，措辞",
+        "拉，拽；引起；吸引"
+      ],
+      "answer": 1,
+      "analysis": "「名前」（なまえ）的意思是「名字」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-v8",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>死ぬ</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "话，语言；说法，措辞",
+        "厚的",
+        "死亡",
+        "拉，拽；引起；吸引"
+      ],
+      "answer": 2,
+      "analysis": "「死ぬ」（しぬ）的意思是「死亡」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-g1",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "私（　　）学生です。",
+      "options": [
+        "は",
+        "が",
+        "を",
+        "に"
+      ],
+      "answer": 0,
+      "analysis": "「私は学生です」——「は」提示主题。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-g2",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "毎朝七時（　　）起きます。",
+      "options": [
+        "に",
+        "で",
+        "を",
+        "が"
+      ],
+      "answer": 0,
+      "analysis": "具体时间点用「に」：七時に起きる。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-g3",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "これは（　　）本ですか。",
+      "options": [
+        "なんの",
+        "なにの",
+        "だれの",
+        "どこ"
+      ],
+      "answer": 0,
+      "analysis": "问「什么书」用「何の本」，「だれの」是问人。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n5-r1",
+      "subject": "reading",
+      "sectionTitle": "读解",
+      "passage": "私は毎日七時に起きます。それから、ご飯を食べて、学校へ行きます。学校は八時半からです。夜は十一時に寝ます。",
+      "title": "この人は毎日何時に起きますか。",
+      "options": [
+        "七時",
+        "八時半",
+        "十一時",
+        "六時"
+      ],
+      "answer": 0,
+      "analysis": "第一句「私は毎日七時に起きます」直接给出答案。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    }
+  ]
+}

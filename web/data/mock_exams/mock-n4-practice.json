@@ -1,0 +1,272 @@
+{
+  "objectId": "mock-n4-practice",
+  "title": "N4 自建练习卷 A",
+  "tag": "N4",
+  "subjects": [
+    "vocabulary",
+    "grammar",
+    "reading"
+  ],
+  "questions": [
+    {
+      "id": "n4-v1",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>触る</u>",
+      "options": [
+        "さわる",
+        "やさしい",
+        "よやく",
+        "おくれる"
+      ],
+      "answer": 0,
+      "analysis": "「触る」读作「さわる」，意思是「触，碰」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v2",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>優しい</u>",
+      "options": [
+        "さわる",
+        "やさしい",
+        "よやく",
+        "おくれる"
+      ],
+      "answer": 1,
+      "analysis": "「優しい」读作「やさしい」，意思是「温柔的；柔和的」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v3",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>予約</u>",
+      "options": [
+        "やさしい",
+        "さわる",
+        "よやく",
+        "おくれる"
+      ],
+      "answer": 2,
+      "analysis": "「予約」读作「よやく」，意思是「预约，预订」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v4",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>遅れる</u>",
+      "options": [
+        "よやく",
+        "さわる",
+        "やさしい",
+        "おくれる"
+      ],
+      "answer": 3,
+      "analysis": "「遅れる」读作「おくれる」，意思是「迟到；进展慢」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v5",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>展覧会</u>",
+      "options": [
+        "てんらんかい",
+        "さわる",
+        "やさしい",
+        "よやく"
+      ],
+      "answer": 0,
+      "analysis": "「展覧会」读作「てんらんかい」，意思是「展览会」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v6",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>研究</u>",
+      "options": [
+        "さわる",
+        "けんきゅう",
+        "やさしい",
+        "よやく"
+      ],
+      "answer": 1,
+      "analysis": "「研究」读作「けんきゅう」，意思是「研究」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v7",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>医学</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "医学",
+        "触，碰",
+        "温柔的；柔和的",
+        "预约，预订"
+      ],
+      "answer": 0,
+      "analysis": "「医学」（いがく）的意思是「医学」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v8",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>謝る</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "触，碰",
+        "道歉，谢罪",
+        "温柔的；柔和的",
+        "预约，预订"
+      ],
+      "answer": 1,
+      "analysis": "「謝る」（あやまる）的意思是「道歉，谢罪」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-v9",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>気持ち</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "温柔的；柔和的",
+        "触，碰",
+        "心情，感受",
+        "预约，预订"
+      ],
+      "answer": 2,
+      "analysis": "「気持ち」（きもち）的意思是「心情，感受」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-g1",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "日本語が話せる（　　）なりました。",
+      "options": [
+        "ように",
+        "そうに",
+        "ために",
+        "ことに"
+      ],
+      "answer": 0,
+      "analysis": "「动词可能形 + ようになる」表示能力的变化：能说了。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-g2",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "先生に作文を（　　）もらいました。",
+      "options": [
+        "直して",
+        "直す",
+        "直し",
+        "直した"
+      ],
+      "answer": 0,
+      "analysis": "「て形 + もらう」表示请别人为自己做某事。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-g3",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "雨が降って（　　）、試合は行われます。",
+      "options": [
+        "いても",
+        "いると",
+        "いたら",
+        "いるので"
+      ],
+      "answer": 0,
+      "analysis": "「ても」表让步：即使在下雨，比赛也照常进行。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n4-r1",
+      "subject": "reading",
+      "sectionTitle": "读解",
+      "passage": "田中さんへ\n\n明日の会議は午後三時からです。場所は三階の会議室に変わりました。\n資料は今日中にメールで送ってください。コピーは必要ありません。\n遅れる場合は、必ず連絡をお願いします。\n\n山田",
+      "title": "このメールで正しいものはどれですか。",
+      "options": [
+        "会議の場所が変わった",
+        "資料をコピーして持っていく",
+        "会議は午前中に行われる",
+        "遅れても連絡は要らない"
+      ],
+      "answer": 0,
+      "analysis": "正文写「場所は三階の会議室に変わりました」，地点变了；资料只需邮件发送，不必复印。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    }
+  ]
+}

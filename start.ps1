@@ -1,4 +1,4 @@
-# Start the Japanese dictionary site (FastAPI + uvicorn)
+﻿# Start the Japanese dictionary site (FastAPI + uvicorn)
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Web = Join-Path $Root "web"

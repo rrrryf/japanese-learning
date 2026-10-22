@@ -21,7 +21,37 @@
       "hasPractice": true
     }
   ],
-  "N1": [],
-  "N4": [],
-  "N5": []
+  "N1": [
+    {
+      "objectId": "mock-n1-practice",
+      "id": "mock-n1-practice",
+      "_id": "mock-n1-practice",
+      "tag": "N1",
+      "title": "N1 自建练习卷 A",
+      "isFree": true,
+      "hasPractice": true
+    }
+  ],
+  "N4": [
+    {
+      "objectId": "mock-n4-practice",
+      "id": "mock-n4-practice",
+      "_id": "mock-n4-practice",
+      "tag": "N4",
+      "title": "N4 自建练习卷 A",
+      "isFree": true,
+      "hasPractice": true
+    }
+  ],
+  "N5": [
+    {
+      "objectId": "mock-n5-practice",
+      "id": "mock-n5-practice",
+      "_id": "mock-n5-practice",
+      "tag": "N5",
+      "title": "N5 自建练习卷 A",
+      "isFree": true,
+      "hasPractice": true
+    }
+  ]
 }

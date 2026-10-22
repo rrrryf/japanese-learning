@@ -1,0 +1,272 @@
+{
+  "objectId": "mock-n1-practice",
+  "title": "N1 自建练习卷 A",
+  "tag": "N1",
+  "subjects": [
+    "vocabulary",
+    "grammar",
+    "reading"
+  ],
+  "questions": [
+    {
+      "id": "n1-v1",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>野心</u>",
+      "options": [
+        "やしん",
+        "たいせい",
+        "ちょうほう",
+        "きふく"
+      ],
+      "answer": 0,
+      "analysis": "「野心」读作「やしん」，意思是「野心」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v2",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>態勢</u>",
+      "options": [
+        "やしん",
+        "たいせい",
+        "ちょうほう",
+        "きふく"
+      ],
+      "answer": 1,
+      "analysis": "「態勢」读作「たいせい」，意思是「态势，姿态」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v3",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>重宝</u>",
+      "options": [
+        "たいせい",
+        "やしん",
+        "ちょうほう",
+        "きふく"
+      ],
+      "answer": 2,
+      "analysis": "「重宝」读作「ちょうほう」，意思是「便利的，实用的；珍视，爱惜」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v4",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>起伏</u>",
+      "options": [
+        "ちょうほう",
+        "やしん",
+        "たいせい",
+        "きふく"
+      ],
+      "answer": 3,
+      "analysis": "「起伏」读作「きふく」，意思是「起伏；浮沉，起落」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v5",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>風俗</u>",
+      "options": [
+        "ふうぞく",
+        "やしん",
+        "たいせい",
+        "ちょうほう"
+      ],
+      "answer": 0,
+      "analysis": "「風俗」读作「ふうぞく」，意思是「风俗」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v6",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 读音",
+      "passage": "",
+      "title": "次の言葉の読み方として最もよいものを選びなさい。<br><u>雇用</u>",
+      "options": [
+        "やしん",
+        "こよう",
+        "たいせい",
+        "ちょうほう"
+      ],
+      "answer": 1,
+      "analysis": "「雇用」读作「こよう」，意思是「雇佣，雇用」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v7",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>審判</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "裁判（员）；审判，判决",
+        "野心",
+        "态势，姿态",
+        "便利的，实用的；珍视，爱惜"
+      ],
+      "answer": 0,
+      "analysis": "「審判」（しんぱん）的意思是「裁判（员）；审判，判决」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v8",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>特産</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "野心",
+        "特产",
+        "态势，姿态",
+        "便利的，实用的；珍视，爱惜"
+      ],
+      "answer": 1,
+      "analysis": "「特産」（とくさん）的意思是「特产」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-v9",
+      "subject": "vocabulary",
+      "sectionTitle": "词汇 · 意思",
+      "passage": "",
+      "title": "「<u>繊維</u>」の意味として最もよいものを選びなさい。",
+      "options": [
+        "态势，姿态",
+        "野心",
+        "纤维",
+        "便利的，实用的；珍视，爱惜"
+      ],
+      "answer": 2,
+      "analysis": "「繊維」（せんい）的意思是「纤维」。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-g1",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "彼の言い分も（　　）をえない。",
+      "options": [
+        "認めざる",
+        "認める",
+        "認めた",
+        "認めよう"
+      ],
+      "answer": 0,
+      "analysis": "「ざるをえない」＝不得不……；「認めざるをえない」不得不承认。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-g2",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "長年の努力（　　）あって、今回の合格がある。",
+      "options": [
+        "が",
+        "を",
+        "に",
+        "で"
+      ],
+      "answer": 0,
+      "analysis": "「努力があって」＝正因为有努力（才有了结果），固定搭配。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-g3",
+      "subject": "grammar",
+      "sectionTitle": "文法 · 填空",
+      "passage": "",
+      "title": "このまま放置すれば、取り返しのつかない事態に（　　）かねない。",
+      "options": [
+        "なり",
+        "なる",
+        "なって",
+        "なった"
+      ],
+      "answer": 0,
+      "analysis": "「かねない」接ます形：なりかねない＝有可能变成（不好的结果）。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    },
+    {
+      "id": "n1-r1",
+      "subject": "reading",
+      "sectionTitle": "读解",
+      "passage": "効率という言葉は、しばしば「短時間で多くの成果を出すこと」と同一視される。だが、本当に効率が問われるのは、何を成果とみなすかという定義の段階であって、作業の速度ではない。定義を誤ったまま速度だけを上げれば、間違った方向へより速く進むことになる。",
+      "title": "筆者が最も言いたいことは何か。",
+      "options": [
+        "成果の定義を問うことが本質だ",
+        "作業速度を上げることが最優先だ",
+        "効率という言葉は使うべきでない",
+        "短時間で成果を出す方法を学ぶべきだ"
+      ],
+      "answer": 0,
+      "analysis": "第二句明确：真正被追问的是「何を成果とみなすか」这个定义阶段，而非作业速度。",
+      "imageId": "",
+      "mediaId": "",
+      "audioUrl": "",
+      "subtitle": "",
+      "translation": ""
+    }
+  ]
+}

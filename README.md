@@ -154,12 +154,28 @@ Ollama 没启动，或没有对应模型。先 `ollama serve`，再 `ollama pull
 
 ## 数据来源与协议
 
-- **JMdict / EDICT**：EDRDG，[CC-BY-SA 4.0](https://www.edrdg.org/) — `setup_data.py` 自动下载
-- **开放语法参考**：`data/openjlpt_grammar_*.json`
-- **模考题目**：本仓库自建的示例内容，仅供演示
+本项目不自造词典内容，全部来自下列公开数据源。**再分发时请保留署名。**
 
-代码可用于作品集展示；词库数据请遵守上游协议，勿二次商用分发未授权内容。
+| 数据 | 上游 | 许可 |
+|---|---|---|
+| 词条 / 义项 / 词形 | [JMdict](https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project)（EDRDG） | **CC-BY-SA 4.0** |
+| 中文释义 / 音调 | [Japanese-Chinese-thesaurus](https://github.com/lxl66566/Japanese-Chinese-thesaurus)（lxl66566） | **The Unlicense**（公有领域） |
+| 双语例句 | [Tatoeba](https://tatoeba.org/)（CC-BY 2.0 FR） | **CC-BY 2.0 FR** |
+| JLPT 分级词表 | 依据 JLPT 官方出题基准整理 | 事实性数据，无版权限制 |
+| 语法条目（`data/openjlpt_grammar_*.json`） | 本项目整理 | 随本项目 |
+| 模考题目（`web/data/mock_exams/`） | 本项目自建示例 | 随本项目 |
+
+### 两点要注意
+
+**① 代码与数据的许可不同。**
+代码（`web/`、`scripts/`）可按作品集用途自由使用；但 `jmdict.db` 及其衍生数据包含 JMdict 内容，适用 **CC-BY-SA 4.0**——分发时要署名 EDRDG，且**修改后的词典数据库需以相同协议共享**。
+
+**② 例句署名。**
+`data/examples.jsonl.gz` 来自 Tatoeba，CC-BY 2.0 FR 要求署名。导出脚本（`scripts/export_data.py`）已剔除正文含个人邮箱的条目，避免把他人联系方式带进分发物。
+
+> 如果你要把这些数据用于商业产品，请先分别确认上表的许可条款；其中只有 Japanese-Chinese-thesaurus（Unlicense）与 JLPT 词表没有额外限制。
 
 ## License
 
-代码部分可按作品集用途使用。词典数据版权归原作者 / EDRDG。
+- **代码**：可按作品集用途使用
+- **数据**：各自遵循上表所列上游协议（JMdict 部分为 CC-BY-SA 4.0）
