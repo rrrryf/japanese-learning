@@ -2819,3 +2819,15 @@ body.detail-screen .shell {
   cursor: not-allowed;
   text-decoration: line-through;
 }
+
+.ge-src {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 16px;
+  color: #b26a00;
+  background: #fff4e5;
+  border-radius: 4px;
+  vertical-align: middle;
+}

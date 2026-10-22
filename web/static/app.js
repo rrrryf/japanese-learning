@@ -1954,8 +1954,13 @@
           .map((ex) => {
             const ja = escapeHtml(ex.ja || "");
             const en = escapeHtml(ex.zh || ex.en || "");
+            // src=llm 的是本机模型生成的，标出来避免被当成教材例句
+            const tag =
+              ex.src === "llm"
+                ? '<span class="ge-src" title="本机模型生成，可能有误">AI 生成</span>'
+                : "";
             return (
-              `<li><div class="ge-ja">${ja}</div>` +
+              `<li><div class="ge-ja">${ja}${tag}</div>` +
               (en ? `<div class="ge-en">${en}</div>` : "") +
               `</li>`
             );
