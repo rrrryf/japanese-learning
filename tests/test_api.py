@@ -18,6 +18,8 @@ import sys
 import threading
 import time
 import urllib.error
+from pathlib import Path
+
 import urllib.parse
 import urllib.request
 
@@ -196,6 +198,51 @@ def main() -> int:
         p95 = statistics.quantiles(lat, n=20)[-1] if len(lat) > 5 else max(lat)
         rec("PASS" if errors == 0 else "FAIL", f"并发 {label}",
             f"wall={wall:.0f}ms p95={p95:.0f}ms errors={errors} codes={codes}")
+
+    # ---------------------------------------------------------------- J
+    section("J. 本地题库导入")
+    exam_src = (Path(__file__).resolve().parent.parent
+                / "web" / "data" / "mock_exams" / "mock-n3-practice.json")
+    if not exam_src.is_file():
+        rec("SKIP", "导入用例", "找不到 mock-n3-practice.json")
+    else:
+        sample = json.loads(exam_src.read_text(encoding="utf-8-sig"))
+        sample["tag"] = "N3"
+        body = json.dumps(sample, ensure_ascii=False).encode("utf-8")
+        st, resp, ms, _ = req("/api/exam/import?filename=ci-probe.json", method="POST",
+                              body=body, ctype="application/json")
+        rec("PASS" if st == 200 else "FAIL", "导入一套本地卷",
+            f"status={st} {resp[:90].decode('utf-8', 'replace')}")
+        new_id = None
+        if st == 200:
+            try:
+                new_id = json.loads(resp).get("id")
+            except ValueError:
+                pass
+        if new_id:
+            st, body2, ms, _ = req("/api/exam/list?level=N3")
+            found = b"ci-probe" in body2
+            rec("PASS" if st == 200 and found else "FAIL", "列表里能看到导入的卷",
+                f"status={st} found={found}")
+            st, _, ms, _ = req(f"/api/exam/{new_id}")
+            rec("PASS" if st == 200 else "FAIL", "拉取导入的卷", f"status={st}")
+            st, _, ms, _ = req(f"/api/exam/import/{new_id}", method="DELETE")
+            rec("PASS" if st == 200 else "FAIL", "删除导入的卷", f"status={st}")
+            st, _, ms, _ = req(f"/api/exam/{new_id}")
+            rec("PASS" if st == 404 else "FAIL", "删除后再拉取（应 404）", f"status={st}")
+
+    for label, payload in (
+        ("缺 questions", {"tag": "N3"}),
+        ("tag 非法", {"tag": "N9", "questions": [{"title": "t", "options": ["a", "b"], "answer": 0}]}),
+        ("answer 越界", {"tag": "N3", "questions": [{"title": "t", "options": ["a", "b"], "answer": 9}]}),
+    ):
+        st, _, ms, _ = req("/api/exam/import?filename=bad.json", method="POST",
+                           body=json.dumps(payload).encode("utf-8"), ctype="application/json")
+        rec("PASS" if st == 400 else "FAIL", f"拒绝导入：{label}", f"status={st}")
+
+    expect("非法 exam id（应 400）", 400, "/api/exam/....json")
+    expect("导入端点拒绝 text/plain", 415, "/api/exam/import",
+           method="POST", body=b"{}", ctype="text/plain")
 
     # ---------------------------------------------------------------- H
     section("H. 已移除的端点与依赖故障")

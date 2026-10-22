@@ -13,6 +13,10 @@ venv/
 **/config.local.*
 web/cache/audio/
 
+# 用户导入的卷子：只在本地生效。
+# 如果你导入的是付费题库内容，它不应该出现在版本库里。
+web/cache/imported_exams/
+
 # Large / personal
 jmdict.db
 jmdict.db.*

@@ -266,6 +266,13 @@
             </div>
             <p class="exam-drill-hint">选专项后再点下方卷子，只练该科；整卷则做全套</p>
           </div>
+          <div class="exam-import" id="exam-import">
+            <button type="button" class="exam-import-btn" id="btn-exam-import">＋ 导入题库</button>
+            <input type="file" id="exam-import-file" accept=".json,application/json" multiple hidden />
+            <span class="exam-import-hint" id="exam-import-hint">
+              选择卷子 JSON（可多选）或拖拽到这里；导入的卷子只保存在本机
+            </span>
+          </div>
           <ul id="exam-list" class="exam-list"></ul>
           <p id="exam-empty" class="hint hidden">加载失败或该等级暂无卷子。</p>
           <div class="exam-history" id="exam-history">

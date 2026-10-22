@@ -42,7 +42,7 @@ MAX_INT64 = 2**63 - 1
 ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1", "[::1]", ""}
 
 # /api/exam/{exam_id} 会掩盖同前缀的其它路由，这几个是保留名
-EXAM_ID_RESERVED = {"log", "logs", "list"}
+EXAM_ID_RESERVED = {"log", "logs", "list", "import", "imported"}
 
 CSP = (
     "default-src 'self'; "
@@ -335,14 +335,55 @@ async def api_weakness_analyze(request: Request, limit: int = Query(50, ge=1, le
     result["source"] = "merged"
     return result
 
+@app.get("/api/exam/imported")
+def api_exam_imported():
+    """已导入的本地卷（存放在 web/cache/imported_exams/，不进版本库）。"""
+    return {"list": mock_exam.all_imported()}
+
+
+@app.post("/api/exam/import")
+async def api_exam_import(request: Request, filename: str = Query("")):
+    """导入一套本地卷子。body 直接放卷子 JSON，文件名通过 query 传入（用于生成 id）。"""
+    _require_json(request)
+    raw = await request.body()
+    if len(raw) > mock_exam.MAX_BYTES:
+        raise HTTPException(status_code=413,
+                            detail=f"文件过大（上限 {mock_exam.MAX_BYTES // 1048576} MB）")
+    try:
+        payload = json.loads(raw.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as e:
+        raise HTTPException(status_code=400, detail=f"不是合法 JSON：{e}") from e
+    try:
+        return mock_exam.import_exam(payload, filename)
+    except mock_exam.MockExamError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.delete("/api/exam/import/{exam_id}")
+def api_exam_import_delete(exam_id: str):
+    try:
+        deleted = mock_exam.delete_imported(exam_id)
+    except mock_exam.InvalidExamId as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except mock_exam.MockExamError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    if not deleted:
+        raise HTTPException(status_code=404, detail="imported exam not found")
+    return {"ok": True, "id": exam_id}
+
+
 @app.get("/api/exam/{exam_id}")
 def api_exam(exam_id: str, refresh: bool = Query(False)):
     if exam_id in EXAM_ID_RESERVED:
         raise HTTPException(status_code=405, detail="method not allowed for this path")
     try:
         return mock_exam.fetch_full_exam(exam_id, refresh=refresh)
-    except mock_exam.MockExamError as e:
+    except mock_exam.InvalidExamId as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except mock_exam.ExamNotFound as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    except mock_exam.MockExamError as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
 
 
 @app.get("/")

@@ -1743,6 +1743,89 @@ body.detail-screen .appbar-nav {
   margin-left: 6px;
 }
 
+/* ---- 本地题库导入 ---- */
+.exam-import {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 14px;
+  padding: 12px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: var(--fill);
+}
+
+.exam-import-btn {
+  flex: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--card);
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.exam-import-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.exam-import-hint {
+  flex: 1 1 240px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.exam-import-hint.good {
+  color: var(--accent);
+}
+
+.exam-import-hint.bad {
+  color: #c0392b;
+}
+
+/* 拖拽文件到真题页时的高亮 */
+.view-exam.exam-dragging {
+  outline: 2px dashed var(--primary);
+  outline-offset: 6px;
+  border-radius: 16px;
+}
+
+.exam-item-imported {
+  color: var(--primary);
+  background: var(--primary-soft);
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+}
+
+.exam-item-del {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-left: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.exam-item-del:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: #fdecea;
+}
+
 /* —— 刷题会话 —— */
 .exam-topbar {
   display: flex;

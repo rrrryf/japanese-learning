@@ -2135,6 +2135,81 @@
     });
   }
 
+  // ---- 导入本地题库 ----------------------------------------------------
+  // 导入的卷子会写到 web/cache/imported_exams/（git 忽略），只在本次机器生效。
+  function initExamImport() {
+    const btn = document.getElementById("btn-exam-import");
+    const input = document.getElementById("exam-import-file");
+    const hint = document.getElementById("exam-import-hint");
+    const view = document.getElementById("view-exam");
+    if (!btn || !input || !hint) return;
+
+    const setHint = (text, ok) => {
+      hint.textContent = text;
+      hint.classList.toggle("bad", ok === false);
+      hint.classList.toggle("good", ok === true);
+    };
+
+    async function uploadOne(file) {
+      const text = await file.text();
+      const res = await fetch(
+        `/api/exam/import?filename=${encodeURIComponent(file.name)}`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: text }
+      );
+      if (!res.ok) throw new Error(await readError(res));
+      return res.json();
+    }
+
+    async function handleFiles(fileList) {
+      const picked = Array.from(fileList || []).filter((f) => /\.json$/i.test(f.name));
+      if (!picked.length) {
+        setHint("只支持 .json 文件", false);
+        return;
+      }
+      setHint(`正在导入 ${picked.length} 个文件…`);
+      const ok = [];
+      const bad = [];
+      for (const f of picked) {
+        try {
+          const r = await uploadOne(f);
+          ok.push(`${r.title}（${r.questionCount} 题 · ${r.tag}）`);
+        } catch (e) {
+          bad.push(`${f.name} — ${e && e.message ? e.message : e}`);
+        }
+      }
+      if (ok.length) setHint(`已导入 ${ok.length} 套：${ok.join("；")}`, true);
+      if (bad.length) setHint(`失败 ${bad.length} 个：${bad.join("；")}`, false);
+      if (ok.length) loadExamList();
+    }
+
+    btn.addEventListener("click", () => input.click());
+    input.addEventListener("change", () => {
+      const files = input.files;
+      input.value = "";
+      handleFiles(files);
+    });
+
+    if (view) {
+      ["dragenter", "dragover"].forEach((ev) =>
+        view.addEventListener(ev, (e) => {
+          const types = e.dataTransfer && e.dataTransfer.types;
+          if (!types || !Array.from(types).includes("Files")) return;
+          e.preventDefault();
+          view.classList.add("exam-dragging");
+        })
+      );
+      ["dragleave", "drop"].forEach((ev) =>
+        view.addEventListener(ev, (e) => {
+          e.preventDefault();
+          view.classList.remove("exam-dragging");
+        })
+      );
+      view.addEventListener("drop", (e) => {
+        handleFiles(e.dataTransfer ? e.dataTransfer.files : null);
+      });
+    }
+  }
+
   async function loadExamList() {
     if (!el.examList) return;
     el.examList.innerHTML = "";
@@ -2154,15 +2229,38 @@
         const li = document.createElement("li");
         li.className = "exam-item";
         const free = p.isFree === true ? '<span class="exam-item-free">免费</span>' : "";
+        const imported = p.imported
+          ? '<span class="exam-item-imported" title="本地导入，只存在这台机器">本地</span>'
+          : "";
+        const del = p.imported
+          ? '<button type="button" class="exam-item-del" title="删除这套导入的卷子">×</button>'
+          : "";
         li.innerHTML =
           `<span class="exam-item-title">${escapeHtml(p.title || p.objectId)}</span>` +
-          `<span class="exam-item-tag">${escapeHtml(p.tag || "")}</span>${free}`;
-        li.addEventListener("click", () => {
+          `<span class="exam-item-tag">${escapeHtml(p.tag || "")}</span>${imported}${free}${del}`;
+        li.addEventListener("click", (ev) => {
+          if (ev.target.closest(".exam-item-del")) return; // 删除按钮自己处理
           const subj = examDrillSubject;
           location.hash = subj
             ? `#/exam/${p.objectId}/${subj}`
             : `#/exam/${p.objectId}`;
         });
+        const delBtn = li.querySelector(".exam-item-del");
+        if (delBtn) {
+          delBtn.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            if (!confirm(`删除「${p.title || p.objectId}」？只删本地文件，不影响其它卷。`)) return;
+            try {
+              const r = await fetch(`/api/exam/import/${encodeURIComponent(p.objectId)}`, {
+                method: "DELETE",
+              });
+              if (!r.ok) throw new Error(await readError(r));
+              loadExamList();
+            } catch (e) {
+              alert("删除失败：" + (e && e.message ? e.message : e));
+            }
+          });
+        }
         el.examList.appendChild(li);
       });
     } catch (e) {
@@ -2173,8 +2271,7 @@
 
   function syncExamDrillChips() {
     const chips = document.getElementById("exam-drill-chips");
-    if (!chips) return;
-    chips.querySelectorAll(".exam-drill-chip").forEach((btn) => {
+    if (!chips) return;    chips.querySelectorAll(".exam-drill-chip").forEach((btn) => {
       const s = btn.getAttribute("data-subject") || "";
       const active = examDrillSubject ? s === examDrillSubject : s === "";
       btn.classList.toggle("selected", active);
@@ -2548,6 +2645,7 @@
   }
 
   window.addEventListener("hashchange", route);
+  initExamImport();
   syncClearBtn();
   refreshDailyUI();
   if (el.btnWeaknessRefresh) {
