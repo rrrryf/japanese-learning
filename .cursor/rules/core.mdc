@@ -1,0 +1,87 @@
+---
+description: 项目核心约束——结构、禁区、验证方式
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# 日语学习应用 · 核心规则
+
+本地优先的日语学习工具：FastAPI + 单文件原生 JS SPA + SQLite（JMdict 派生）+ 可选 Ollama。
+没有构建步骤，没有前端框架，没有 npm。改完刷新浏览器就生效。
+
+## 这个项目有两个副本，先确认你在改哪个
+
+| | 私有版 | 公开版（本仓库） |
+|---|---|---|
+| 路径 | `<path>\jmdict` | `<path>\japanese-learning-public` |
+| 端口 | 8765 | 8766 |
+| 模块考卷 | 在线题库 在线题库（需 token） | 本地 JSON + 用户导入 |
+| 语法数据 | thesaurus 887 条 | `data/openjlpt_grammar_*.json` 100 条 |
+| 用途 | 自用 | 对外分发 |
+
+**看路径再动手。** 两边的 `web/lookup.py` 高度相似但已经分叉，别互相覆盖。
+用户说"这个项目"时默认指**公开版**；说"我平时用的那个"指私有版。
+
+## 绝对不要做
+
+1. **不要提交 `jmdict.db`、`jmdict.db.bak`、`JMdict_e.xml`、`JMdict_e.gz`**
+   这些在 `.gitignore` 里，共约 150 MB。`git add -f` 也不行。
+2. **不要动 `web/cache/imported_exams/`**
+   里面可能是付费题库内容，只在本地存在。`.gitignore` 已排除，别把它纳入版本库，
+   也别在代码里加"导出/分享"这类功能。
+3. **不要删除 `idx_word_forms_seq` 索引**
+   `word_forms(seq)` 上的索引是性能命脉。没有它 `/api/jlpt` 从 47ms 掉到 16 秒。
+4. **不要引入构建步骤或前端框架**
+   `web/static/` 是三个文件：`index.html` / `app.js`（约 2700 行）/ `style.css`。
+   保持无构建。不要提议 React/Vue/TypeScript 迁移，除非用户明确要求。
+5. **不要改 `_normalize` 的答案校验去"放宽"**
+   它会丢弃选项不足或答案越界的题。这是数据质量的护栏。
+
+## 改完必须跑
+
+```powershell
+# 1. 语法 + 单元测试（不需要服务）
+python tests/test_units.py
+
+# 2. 接口回归（会自己起服务、测完关掉）
+.\run_tests.ps1
+```
+
+两条都得是 0 fail 才算完成。`run_tests.ps1` 退出码非 0 就是有问题。
+
+## PowerShell 脚本的编码坑
+
+`.ps1` 文件**必须存成 UTF-8 with BOM**，否则 Windows PowerShell 5.1 按 GBK 解析
+中文注释会报 `Unexpected token '}'` 这类莫名其妙的语法错误。
+
+Python 脚本输出含 `⓪` 等字符时，控制台是 GBK 会 `UnicodeEncodeError`。
+脚本里加：
+
+```python
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+```
+
+跑 Python 前设 `$env:PYTHONIOENCODING='utf-8'`。
+
+## 数据与缓存的耦合
+
+`web/main.py` 里 `get_word_cached` 是 `lru_cache(1024)`。重建 `jmdict.db` 之后
+必须 `POST /api/cache/clear`，否则读到的是旧结构。
+
+`web/lookup.py` 的 `_db()` 用进程级连接 + WAL。改 schema 时注意已有连接会持有旧 prepare。
+
+## 已经修过的东西，不要改回去
+
+这些是踩过的坑，改动时要保持：
+
+- URL 整数参数有 `ApiPath(ge=0, le=MAX_INT64)` 上限；Pydantic body 字段同理
+  （超过 int64 会让 SQLite 抛 OverflowError，那不是 `sqlite3.Error`，会冒成 500）
+- Host 白名单要处理 IPv6 `[::1]:port`，不能直接 `split(":")`
+- POST 端点要求 `Content-Type: application/json`（挡 CSRF 简单请求）
+- `conjugator.conjugate` 的 `suru` 分支必须保留词干（愛する → 愛します）
+- 模考卷的正确答案必须分散，不能让某个选项占比 > 60%
+- 含假名的搜索命中后跳过中文 gloss 全表扫描（`_has_kana` 判断）
+- `weakness.save_session` 只写单个 `.json`，不再双写 `sessions.jsonl`

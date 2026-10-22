@@ -1,0 +1,39 @@
+---
+description: 前端约定——单文件 SPA、XSS 白名单、状态管理
+globs: ["web/static/**"]
+---
+
+# 前端约定
+
+## 结构
+
+`app.js` 是单文件 SPA（约 2700 行），用 hash 路由：`#/`, `#/word/123`, `#/exam/<id>`, `#/grammar/<id>`。
+没有模块系统，所有函数在同一作用域。改的时候用 `el.xxx` 缓存好的 DOM 引用，别到处 `querySelector`。
+
+`index.html` 里没有内联脚本（CSP `script-src 'self'`）。加脚本必须走 `app.js`。
+
+## 安全
+
+**所有从 API 拿到的文本都要 `escapeHtml()`。** 唯一的例外是考试题干——
+它走 `sanitizeExamHtml()`：`<template>` 懒解析 + 白名单重建，只允许 `br/strong/em/u/ruby/rt/p/span`。
+
+改题干渲染时不要图省事用 `innerHTML` 直出。测试在 `tests/test_sanitize.mjs`（15 个用例）。
+
+## 状态
+
+- 播放/答题状态用模块级变量（`examLevel` / `examDrillSubject` / `detailToken`）
+- `detailToken` 用来防"慢请求覆盖新详情"的竞态，别删
+- 刷新页面会丢面板状态（已知问题，见 `docs/CURSOR-TASKS.md`）
+
+## 新增 UI 的检查清单
+
+1. 空状态有提示文案，不要留白
+2. 失败时有可读的 `alert` 或行内提示，不是 `console.error`
+3. 加 `hidden` 的元素要确认 `style.css` 里 `[hidden] { display: none !important }` 生效
+4. 长列表要能被 `exam-item` / `ld-section` 这类既有样式吃到，别新造一套
+
+## 不要做
+
+- 不要引入打包器、框架、CSS 预处理器
+- 不要用 `fetch` 之外的 HTTP 客户端
+- 不要在 `app.js` 里硬编码模型名（后端 `/api/ai/status` 会返回）

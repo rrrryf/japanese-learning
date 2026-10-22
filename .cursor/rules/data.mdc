@@ -1,0 +1,64 @@
+---
+description: 数据层约定——建库、导入、许可、覆盖率
+globs: ["data/**", "setup_data.py", "build_db.py", "scripts/**"]
+---
+
+# 数据层约定
+
+## 两条路径
+
+**新用户**：`python setup_data.py` → 下载 JMdict_e.gz（10 MB）→ 建库 → 导入 `data/*.jsonl.gz` → 校验
+**改数据**：改 `data/` 下文件或跑 `scripts/fill_*.py`，再重跑 `setup_data.py`
+
+`build_db.py` 每次都重建 `entries`/`senses`/`word_forms`（旧库自动备份成 `.bak`），
+但保留增强表。`setup_data.py` 用 `import_jsonl(replace=True)` 覆盖主数据、
+`replace=False` 追加补充数据。
+
+## 表的来源，别搞混
+
+| 表 | 行数 | 来源 | 许可 |
+|---|---|---|---|
+| `entries`/`senses`/`word_forms` | 21.9万/25.4万/50万 | JMdict（本机下载生成） | CC-BY-SA 4.0 |
+| `gloss_zh` | 24,522 | thesaurus 23,101 + 本项目补 1,421 | Unlicense / 本项目 |
+| `examples` | 32,424 | Tatoeba | CC-BY 2.0 FR |
+| `jlpt` | 8,138 | JLPT 词表整理 | 事实性数据 |
+| `grammar` | 100 | `data/openjlpt_grammar_*.json` | 本项目 |
+
+补出来的数据要**单独成文件**（如 `gloss_zh_extra.jsonl.gz`），不要混进上游数据文件，
+否则无法区分谁是谁、也没法只回滚一部分。
+
+## 中文释义覆盖率（改动前先看这个）
+
+全库只有约 6.2% 有中文（生僻词没有），但 JLPT 五个等级已经补到 98%+：
+
+```
+N5 98.8% / N4 99.8% / N3 98.7% / N2 98.4% / N1 98.9%
+```
+
+余下约 2% 是难翻译的（编号词、专有名词、语法助词）。补的时候：
+
+```powershell
+python scripts/fill_gloss_zh.py --db jmdict.db --dry-run --limit 10   # 先看 10 条
+python scripts/fill_gloss_zh.py --db jmdict.db                        # 全量补缺口
+```
+
+脚本是幂等的（只处理 `gloss_zh` 里缺的词）。LLM 输出有三种脏数据要清：
+`|` 分隔符、英文残留、整条非中文。参考 `scripts/fill_gloss_zh.py` 里已有的过滤。
+
+## 许可：再分发前必须确认
+
+- JMdict 是 **CC-BY-SA 4.0**：分发 `jmdict.db` 要给 EDRDG 署名，且修改后的库要**同协议共享**
+- Tatoeba 例句是 **CC-BY 2.0 FR**：署名
+- thesaurus 是 **Unlicense**：无要求
+- 不要在 `data/` 里放入来源不明的词典内容
+
+## 模考数据
+
+`web/data/mock_exams/` 有五套示例卷 + `lists.json`。新卷注意：
+
+- `answer` 是正确选项的**下标**（0 开始），必须 `< len(options)`
+- 答案要分散，单一选项占比不超过 60%（`tests/test_units.py` 会检查）
+- `subject` 用 `vocabulary` / `grammar` / `reading` / `listening`
+- 听力题如果没有音频，`listening` 就不要放进 `subjects`，否则前端专项会空
+
+用户导入的卷子在 `web/cache/imported_exams/`，**不进版本库**。

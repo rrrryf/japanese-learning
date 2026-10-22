@@ -1,0 +1,62 @@
+---
+description: Python 后端约定——查询性能、错误语义、连接管理
+globs: ["web/**/*.py", "scripts/**/*.py", "*.py"]
+---
+
+# 后端约定
+
+## 文件职责
+
+| 文件 | 职责 |
+|---|---|
+| `web/main.py` | FastAPI 路由、Pydantic 模型、中间件、安全头 |
+| `web/lookup.py` | 所有 SQL——查词、搜索、语法、JLPT 列表、例句 |
+| `web/mock_exam.py` | 本地卷子的读取、导入、校验、删除 |
+| `web/weakness.py` | 练习日志读写、正确率统计 |
+| `web/ai_ollama.py` | Ollama 调用（可选功能，不可用时降级） |
+| `conjugator.py` | 假名活用生成（纯函数，最值得加单元测试） |
+
+路由里不写 SQL，SQL 里不做 HTTP 错误处理。
+
+## SQL 性能红线
+
+这张库有 21.9 万词条 / 25 万义项 / 50 万词形。**没有索引的查询会全表扫**：
+
+```python
+# 已建的索引，别删
+idx_word_forms(word_form)      # 词形反查 seq
+idx_word_forms_seq(seq)        # seq 反查词形 —— 命脉
+idx_grammar_level(level)
+idx_examples_jpn(jpn)
+```
+
+已知慢点及处理方式：
+
+- `gloss_zh` 的 `LIKE '%x%'` 无法走索引，全表 2.4 万行约 200ms。
+  **只在确有必要时调用** `_search_gloss_zh`——查询含假名且已有结果时跳过。
+- 列表类接口不要 N+1。改 `list_jlpt` 时用 CTE 先挑 seq 再回表（195ms → 27ms）。
+- `ORDER BY RANDOM()` 放在大 JOIN 之后会白连一遍表。先子查询随机取 id，再 JOIN。
+
+## 错误语义
+
+| 情况 | 状态码 |
+|---|---|
+| 参数类型/范围不对 | 422（交给 Pydantic） |
+| id 非法（含路径穿越字符） | 400 |
+| 资源不存在 | 404 |
+| 方法/保留名冲突 | 405 |
+| 数据文件损坏 | 502 |
+| 词库缺失 | 503 |
+
+`mock_exam` 用 `InvalidExamId` / `ExamNotFound` 区分，别都塞进一个异常。
+
+## 整数必须夹紧
+
+任何来自 URL 或 JSON body 的整数，只要会被绑进 SQLite，都要
+`ge=0, le=MAX_INT64`。Python int 是无界的，SQLite 是 64 位有符号，
+超了抛 `OverflowError`——它不是 `sqlite3.Error`，现有异常处理器接不住，直接 500。
+
+## 不要破坏的降级路径
+
+- 没有 `jmdict.db` 时服务仍要能启动（`/api/*` 返回 503，前端显示横幅）
+- 没有 Ollama 时 AI 端点返回 503，必须在 2 秒内失败，不要长超时重试
