@@ -117,10 +117,34 @@ web/data/mock_exams/
 | `entries` / `senses` / `word_forms` | 218,945 词条 / 253,841 义项 / 499,554 词形 | JMdict（本机下载生成，约 80 MB） |
 | `grammar` | 100 条语法（N5–N1 各 20） | `data/openjlpt_grammar_*.json` |
 | `jlpt` | 8,138 条分级词表 | `data/jlpt_words.jsonl.gz`（37 KB） |
-| `gloss_zh` | 23,101 条中文释义 + 音调 | `data/gloss_zh.jsonl.gz`（346 KB） |
+| `gloss_zh` | 23,101 条中文释义 + 音调 | `data/gloss_zh.jsonl.gz`（346 KB，上游 thesaurus） |
+| 　└ 补充 | +1,421 条（填 JLPT 词表缺口） | `data/gloss_zh_extra.jsonl.gz`（14 KB，本机模型翻译） |
 | `examples` | 32,424 条双语例句 | `data/examples.jsonl.gz`（970 KB） |
 
-三份 gzip JSONL 随仓库分发（合计约 1.4 MB），`setup_data.py` 会自动导入；完整词库仍在你本机生成。
+四份 gzip JSONL 随仓库分发（合计约 1.4 MB），`setup_data.py` 会自动导入；完整词库仍在你本机生成。
+
+### 中文释义覆盖情况
+
+上游 thesaurus 只覆盖 11,924 个词条（全库 5.4%），JLPT 五个等级本来只有 75–90%。所以用本机 Ollama 把**JLPT 词表缺的 1,421 个词**补上了：
+
+| 等级 | 补前 | 补后 |
+|---|---|---|
+| N5 | 87.4% | **98.8%** |
+| N4 | 89.4% | **99.8%** |
+| N3 | 89.6% | **98.7%** |
+| N2 | 80.6% | **98.4%** |
+| N1 | 75.3% | **98.9%** |
+
+补充数据单独放在 `gloss_zh_extra.jsonl.gz`，与上游数据分开，重跑 `setup_data.py` 不会丢。生僻词、专有名词、古语仍只有英文释义——查不到中文时详情页会说明原因。
+
+重新生成补充数据：
+
+```powershell
+python scripts/fill_gloss_zh.py --db jmdict.db            # 全量补缺口
+python scripts/fill_gloss_zh.py --db jmdict.db --dry-run --limit 10   # 先看 10 条
+```
+
+> 这些译文由 7B 级本地模型生成，个别词义可能不准（例如把「書き取り」译成"写作"而非"听写"）。介意的话可以在 `gloss_zh_extra.jsonl.gz` 里手改，或用更大的模型重跑。
 
 导出脚本在 `scripts/export_data.py`：如果你有自己的完整词库，可以重跑它刷新这些数据文件。
 

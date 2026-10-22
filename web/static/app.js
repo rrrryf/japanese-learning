@@ -1010,7 +1010,7 @@
         el.fcGlossZh.textContent = zh;
         el.fcGlossZh.classList.remove("empty");
       } else {
-        el.fcGlossZh.textContent = "词典暂无中文词义";
+        el.fcGlossZh.textContent = "暂无中文释义";
         el.fcGlossZh.classList.add("empty");
       }
     }
@@ -1594,7 +1594,7 @@
       `;
     } else {
       meaningInner = `
-        <p class="ld-empty">暂无中文词义（本地日中词典未收录）</p>
+        <p class="ld-empty">该词暂无中文释义（词典对 JLPT 常用词覆盖约 80%，其余多为生僻词或专有名词），以下为英文释义</p>
         ${enSenses ? `<div class="ld-sub">英文补充</div>${enSenses}` : `<p class="ld-empty">无释义</p>`}
       `;
     }

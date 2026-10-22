@@ -119,12 +119,17 @@ def import_grammar(conn: sqlite3.Connection) -> int:
     return total
 
 
-def import_jsonl(conn: sqlite3.Connection, table: str, path: Path, cols: list[str]) -> int:
-    """把 data/*.jsonl.gz 导入指定表（幂等：先清空再灌）。"""
+def import_jsonl(conn: sqlite3.Connection, table: str, path: Path, cols: list[str],
+                 replace: bool = True) -> int:
+    """把 data/*.jsonl.gz 导入指定表。
+
+    replace=True 先清空表（主数据）；replace=False 追加/覆盖单条（补充数据）。
+    """
     if not path.is_file():
         print(f"    - 跳过 {path.name}（不存在）")
         return 0
-    conn.execute(f"DELETE FROM {table}")
+    if replace:
+        conn.execute(f"DELETE FROM {table}")
     sql = (f"INSERT OR REPLACE INTO {table} ({','.join(cols)}) "
            f"VALUES ({','.join('?' * len(cols))})")
     n = 0
@@ -225,6 +230,9 @@ def main() -> int:
         import_jsonl(conn, "jlpt", DATA / "jlpt_words.jsonl.gz", ["word_form", "level"])
         import_jsonl(conn, "gloss_zh", DATA / "gloss_zh.jsonl.gz",
                      ["word_form", "accent", "gloss"])
+        # 补充释义：本机模型翻译的 JLPT 缺口词，追加而非覆盖（与上游数据分开存放）
+        import_jsonl(conn, "gloss_zh", DATA / "gloss_zh_extra.jsonl.gz",
+                     ["word_form", "accent", "gloss"], replace=False)
         import_jsonl(conn, "examples", DATA / "examples.jsonl.gz", ["jpn", "cmn"])
         conn.execute("CREATE INDEX IF NOT EXISTS idx_examples_jpn ON examples(jpn)")
         conn.commit()
