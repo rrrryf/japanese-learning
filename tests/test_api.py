@@ -85,6 +85,17 @@ def main() -> int:
         print(f"[x] 无法访问 {BASE}（status={st}）。先启动服务：.\\start.ps1")
         return 1
 
+    # ---------------------------------------------------------------- 能力探测
+    # 两个副本功能不同：私有版有 /api/audio、没有导入接口；公开版相反。
+    # 这里先探一次，后面按能力决定跑哪套断言。
+    st_imp, _, _, _ = req("/api/exam/import", method="POST", body=b"{}",
+                          ctype="application/json")
+    HAS_IMPORT = st_imp != 405
+    st_aud, _, _, _ = req("/api/audio/1358280")
+    HAS_AUDIO = st_aud == 200
+    print(f"\n[i] 能力探测：导入接口={'有' if HAS_IMPORT else '无'}  "
+          f"发音接口={'有' if HAS_AUDIO else '无'}")
+
     # ---------------------------------------------------------------- A
     section("A. 输入边界")
     expect("空 q", 200, "/api/search?q=")
@@ -201,10 +212,15 @@ def main() -> int:
 
     # ---------------------------------------------------------------- J
     section("J. 本地题库导入")
-    exam_src = (Path(__file__).resolve().parent.parent
+    if not HAS_IMPORT:
+        rec("SKIP", "导入相关用例", "该副本没有 /api/exam/import（私有版走在线题库）")
+    exam_src = None
+    if HAS_IMPORT:
+        exam_src = (Path(__file__).resolve().parent.parent
                 / "web" / "data" / "mock_exams" / "mock-n3-practice.json")
-    if not exam_src.is_file():
-        rec("SKIP", "导入用例", "找不到 mock-n3-practice.json")
+    if exam_src is None or not exam_src.is_file():
+        if HAS_IMPORT:
+            rec("SKIP", "导入用例", "找不到 mock-n3-practice.json")
     else:
         sample = json.loads(exam_src.read_text(encoding="utf-8-sig"))
         sample["tag"] = "N3"
@@ -231,22 +247,26 @@ def main() -> int:
             st, _, ms, _ = req(f"/api/exam/{new_id}")
             rec("PASS" if st == 404 else "FAIL", "删除后再拉取（应 404）", f"status={st}")
 
-    for label, payload in (
+    for label, payload in (((
         ("缺 questions", {"tag": "N3"}),
         ("tag 非法", {"tag": "N9", "questions": [{"title": "t", "options": ["a", "b"], "answer": 0}]}),
         ("answer 越界", {"tag": "N3", "questions": [{"title": "t", "options": ["a", "b"], "answer": 9}]}),
-    ):
+    ) if HAS_IMPORT else ())):
         st, _, ms, _ = req("/api/exam/import?filename=bad.json", method="POST",
                            body=json.dumps(payload).encode("utf-8"), ctype="application/json")
         rec("PASS" if st == 400 else "FAIL", f"拒绝导入：{label}", f"status={st}")
 
     expect("非法 exam id（应 400）", 400, "/api/exam/....json")
-    expect("导入端点拒绝 text/plain", 415, "/api/exam/import",
-           method="POST", body=b"{}", ctype="text/plain")
+    if HAS_IMPORT:
+        expect("导入端点拒绝 text/plain", 415, "/api/exam/import",
+               method="POST", body=b"{}", ctype="text/plain")
 
     # ---------------------------------------------------------------- H
     section("H. 已移除的端点与依赖故障")
-    expect("发音接口已移除（应 404）", 404, "/api/audio/1358280")
+    if HAS_AUDIO:
+        expect("发音接口可用（私有版）", 200, "/api/audio/1358280")
+    else:
+        expect("发音接口已移除（应 404）", 404, "/api/audio/1358280")
     expect("不存在的路由（应 404）", 404, "/api/nope")
     st, body, ms, _ = req("/api/word/1358280")
     rec("PASS" if st == 200 else "FAIL", "词条 core 路径", f"status={st} {len(body)}B")
