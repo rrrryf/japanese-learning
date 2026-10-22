@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import secrets
 import re
 import time
 from pathlib import Path
@@ -82,6 +83,37 @@ def _read_exam_file(path: Path) -> dict[str, Any]:
     return data
 
 
+def _subjects_of(data: dict[str, Any]) -> list[str]:
+    subs: list[str] = []
+    for q in data.get("questions") or []:
+        if isinstance(q, dict):
+            s = q.get("subject")
+            if s and s not in subs:
+                subs.append(s)
+    return subs
+
+
+# 内置卷的 lists.json 没写 subjects，这里按 mtime 缓存读一次
+_subjects_cache: dict[str, tuple[float, list[str]]] = {}
+
+
+def _builtin_subjects(path: Path) -> list[str]:
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        return []
+    cached = _subjects_cache.get(path.name)
+    if cached and cached[0] == mtime:
+        return cached[1]
+    try:
+        data = _read_exam_file(path)
+    except MockExamError:
+        return []
+    subs = _subjects_of(data)
+    _subjects_cache[path.name] = (mtime, subs)
+    return subs
+
+
 def _imported_entry(path: Path) -> dict[str, Any]:
     """把导入文件整理成列表项；解析失败的条目跳过并记下原因。"""
     try:
@@ -101,6 +133,7 @@ def _imported_entry(path: Path) -> dict[str, Any]:
         "hasPractice": True,
         "imported": True,
         "questionCount": len(data["questions"]),
+        "subjects": _subjects_of(data),
     }
 
 
@@ -108,7 +141,15 @@ def _imported_entry(path: Path) -> dict[str, Any]:
 def fetch_exam_list(level: str) -> list[dict[str, Any]]:
     """内置卷 + 导入卷，按等级合并。"""
     level_u = (level or "").strip().upper()
-    builtin = list(_load_lists().get(level_u) or [])
+    builtin = []
+    for item in _load_lists().get(level_u) or []:
+        entry = dict(item)
+        exam_id = str(entry.get("objectId") or entry.get("id") or "")
+        if exam_id and SAFE_ID.match(exam_id):
+            subs = _builtin_subjects(DATA_DIR / f"{exam_id}.json")
+            if subs:
+                entry["subjects"] = subs
+        builtin.append(entry)
     imported = []
     for p in _imported_files():
         entry = _imported_entry(p)
@@ -227,10 +268,17 @@ def import_exam(payload: dict[str, Any], filename: str) -> dict[str, Any]:
     IMPORT_DIR.mkdir(parents=True, exist_ok=True)
     target = IMPORT_DIR / f"{exam_id}.json"
     if target.is_file():
-        # 已存在则不覆盖，加时间戳生成新 id，避免误毁旧卷
-        exam_id = f"{exam_id}-{time.strftime('%Y%m%d%H%M%S')}"
-        target = IMPORT_DIR / f"{exam_id}.json"
-        normalized["objectId"] = exam_id
+        # 已存在则不覆盖：加时间戳 + 随机后缀，避免同一秒内连续导入时碰撞覆盖
+        stamp = time.strftime("%Y%m%d%H%M%S")
+        for _ in range(20):
+            candidate = f"{exam_id}-{stamp}-{secrets.token_hex(2)}"
+            target = IMPORT_DIR / f"{candidate}.json"
+            if not target.is_file():
+                exam_id = candidate
+                normalized["objectId"] = exam_id
+                break
+        else:
+            raise MockExamError("导入失败：同名文件过多，请换个文件名")
     target.write_text(json.dumps(normalized, ensure_ascii=False, indent=2) + "\n",
                       encoding="utf-8")
     return {

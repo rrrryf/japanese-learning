@@ -62,9 +62,16 @@ async def security_headers(request: Request, call_next):
     """基础安全响应头 + Host 白名单（防 DNS rebinding）。
 
     index.html 没有内联脚本，所以 script-src 可以收紧到 'self'。
+    Host 里可能是 "[::1]:8765"——不能直接按 ":" 切，否则得到 "["。
     """
-    hostname = (request.headers.get("host") or "").split(":")[0].strip().lower()
-    if hostname and hostname not in ALLOWED_HOSTS:
+    raw_host = (request.headers.get("host") or "").strip().lower()
+    if raw_host.startswith("["):                      # IPv6 字面量 [::1]:port
+        hostname = raw_host[1: raw_host.find("]")] if "]" in raw_host else raw_host[1:]
+    else:
+        hostname = raw_host.split(":", 1)[0]
+    hostname = hostname.strip()
+    # 同时接受带方括号和不带方括号的写法
+    if hostname and hostname not in ALLOWED_HOSTS and f"[{hostname}]" not in ALLOWED_HOSTS:
         return JSONResponse(status_code=400, content={"detail": "invalid host header"})
     response = await call_next(request)
     response.headers.setdefault("Content-Security-Policy", CSP)
@@ -116,6 +123,14 @@ def api_grammar(
     limit: int = Query(15, ge=1, le=50),
     level: str | None = Query(None, min_length=0, max_length=16),
 ):
+    # 与 /api/jlpt 保持一致：非法等级直接 400，不静默返回全部。
+    # 允许 "unknown"（表示未分级条目）和空串（不过滤）。
+    if level:
+        lv = level.strip().upper()
+        if lv and lv not in {"N5", "N4", "N3", "N2", "N1", "UNKNOWN"}:
+            raise HTTPException(status_code=400,
+                                detail="level must be N5..N1 (or unknown)")
+        level = lv
     return search_grammar(q, limit=limit, level=level)
 
 
@@ -163,7 +178,8 @@ class AiHistoryItem(BaseModel):
 
 
 class AiExplainBody(BaseModel):
-    seq: int | None = None
+    # 超过 int64 的整数绑进 SQLite 会抛 OverflowError，那不是 sqlite3.Error，会一路冒成 500
+    seq: int | None = Field(default=None, ge=0, le=MAX_INT64)
     word: str | None = Field(default=None, max_length=80)
     question: str | None = Field(default=None, max_length=400)
     history: list[AiHistoryItem] | None = None
@@ -203,7 +219,7 @@ def api_ai_explain(body: AiExplainBody):
 
 
 class AiGrammarBody(BaseModel):
-    grammar_id: int
+    grammar_id: int = Field(ge=0, le=MAX_INT64)
     question: str | None = Field(default=None, max_length=400)
     history: list[AiHistoryItem] | None = None
 
@@ -384,6 +400,15 @@ def api_exam(exam_id: str, refresh: bool = Query(False)):
         raise HTTPException(status_code=404, detail=str(e)) from e
     except mock_exam.MockExamError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """浏览器默认会请求 /favicon.ico；给个静态 svg，避免控制台一条 404 红字。"""
+    svg = STATIC_DIR / "favicon.svg"
+    if svg.is_file():
+        return FileResponse(svg, media_type="image/svg+xml")
+    return JSONResponse(status_code=204, content=None)
 
 
 @app.get("/")

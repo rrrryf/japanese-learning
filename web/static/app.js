@@ -1930,10 +1930,38 @@
     if (!el.grammarDetail) return;
     const pattern = data.pattern || "";
     const explain = data.explain || "";
+    const explainZh = (data.explain_zh || "").trim();
     const connection = (data.connection || "").trim();
     const lvl = grammarLevelLabel(data.level);
     const lvlClass = data.level ? "tag jlpt" : "tag jlpt unknown";
     const kanaHint = extractPatternKana(pattern);
+
+    // 意思：优先中文；英文单独标注，不混在中文标题下
+    const explainHtml = explainZh
+      ? `<div class="grammar-explain-body">${escapeHtml(explainZh)}</div>` +
+        (explain
+          ? `<div class="grammar-explain-en"><span class="ld-sub">英文</span>${escapeHtml(explain)}</div>`
+          : "")
+      : explain
+        ? `<div class="grammar-explain-body">${escapeHtml(explain)}</div>` +
+          `<p class="ld-empty">暂无中文释义，以上为英文</p>`
+        : '<p class="ld-empty">暂无说明</p>';
+
+    // 例句：数据结构是 [{ja, en}, ...]
+    const examples = Array.isArray(data.examples) ? data.examples : [];
+    const examplesHtml = examples.length
+      ? `<ul class="grammar-examples">${examples
+          .map((ex) => {
+            const ja = escapeHtml(ex.ja || "");
+            const en = escapeHtml(ex.en || "");
+            return (
+              `<li><div class="ge-ja">${ja}</div>` +
+              (en ? `<div class="ge-en">${en}</div>` : "") +
+              `</li>`
+            );
+          })
+          .join("")}</ul>`
+      : '<p class="ld-empty">暂无固定例句，可问 AI 要例句</p>';
 
     el.grammarDetail.innerHTML = `
       <div class="learn-detail">
@@ -1952,7 +1980,11 @@
           <div class="ld-section-body">
             ${
               connection
-                ? `<div class="grammar-connection-body">${escapeHtml(connection).replace(/\n/g, "<br>")}</div>`
+                ? `<div class="grammar-connection-body">${
+                    /[A-Za-z]{4,}/.test(connection)
+                      ? '<span class="ld-sub">英文</span>'
+                      : ""
+                  }${escapeHtml(connection).replace(/\n/g, "<br>")}</div>`
                 : `<p class="ld-empty">暂无接续</p>`
             }
           </div>
@@ -1961,14 +1993,14 @@
         <section class="ld-section">
           <h2 class="ld-section-title">意思</h2>
           <div class="ld-section-body">
-            <div class="grammar-explain-body">${escapeHtml(explain).replace(/\n/g, "<br>") || '<p class="ld-empty">暂无说明</p>'}</div>
+            ${explainHtml}
           </div>
         </section>
 
         <section class="ld-section">
           <h2 class="ld-section-title">例句</h2>
           <div class="ld-section-body">
-            <p class="ld-empty">暂无固定例句，可问 AI 要例句</p>
+            ${examplesHtml}
           </div>
         </section>
 
@@ -2149,7 +2181,6 @@
       hint.classList.toggle("bad", ok === false);
       hint.classList.toggle("good", ok === true);
     };
-
     async function uploadOne(file) {
       const text = await file.text();
       const res = await fetch(
@@ -2178,7 +2209,14 @@
         }
       }
       if (ok.length) setHint(`已导入 ${ok.length} 套：${ok.join("；")}`, true);
-      if (bad.length) setHint(`失败 ${bad.length} 个：${bad.join("；")}`, false);
+      if (bad.length) {
+        // 成功与失败分开显示，别让失败提示把「哪几套成功了」盖掉
+        setHint(
+          (ok.length ? `已导入 ${ok.length} 套：${ok.join("；")}。` : "") +
+            `失败 ${bad.length} 个：${bad.join("；")}`,
+          ok.length ? null : false
+        );
+      }
       if (ok.length) loadExamList();
     }
 
@@ -2220,10 +2258,28 @@
       if (!res.ok) throw new Error(await readError(res));
       const data = await res.json();
       const list = Array.isArray(data.list) ? data.list : [];
+      // 该等级没有任何卷子含听力题时把「听力」专项标灰，别让用户点进去看到空列表
+      const hasListening = list.some(
+        (p) => Array.isArray(p.subjects) && p.subjects.includes("listening")
+      );
+      const listeningChip = document.querySelector(
+        '#exam-drill-chips .exam-drill-chip[data-subject="listening"]'
+      );
+      if (listeningChip) {
+        listeningChip.disabled = !hasListening;
+        listeningChip.title = hasListening
+          ? ""
+          : "该等级暂无听力题（导入含听力的卷子后可用）";
+      }
       if (!list.length) {
         el.examEmpty.textContent = "该等级暂无卷子。";
         el.examEmpty.classList.remove("hidden");
         return;
+      }
+      if (examDrillSubject === "listening" && !hasListening) {
+        el.examEmpty.textContent =
+          "该等级暂无听力题，可在「＋ 导入题库」导入含听力的卷子。";
+        el.examEmpty.classList.remove("hidden");
       }
       list.forEach((p) => {
         const li = document.createElement("li");

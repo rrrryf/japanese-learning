@@ -16,7 +16,8 @@
     ],
     "tags": [
       "conjunction"
-    ]
+    ],
+    "meaning_zh": "但是"
   },
   {
     "pattern": "〜がいます / 〜があります",
@@ -35,7 +36,8 @@
     ],
     "tags": [
       "existence"
-    ]
+    ],
+    "meaning_zh": "有（人或物）"
   },
   {
     "pattern": "〜から（reason）",
@@ -54,7 +56,8 @@
     ],
     "tags": [
       "reason"
-    ]
+    ],
+    "meaning_zh": "因为"
   },
   {
     "pattern": "〜が好きです / 〜が嫌いです",
@@ -73,7 +76,8 @@
     ],
     "tags": [
       "preference"
-    ]
+    ],
+    "meaning_zh": "喜欢 / 不喜欢"
   },
   {
     "pattern": "〜たい",
@@ -92,7 +96,8 @@
     ],
     "tags": [
       "desire"
-    ]
+    ],
+    "meaning_zh": "想要做"
   },
   {
     "pattern": "〜たことがあります",
@@ -111,7 +116,8 @@
     ],
     "tags": [
       "experience"
-    ]
+    ],
+    "meaning_zh": "曾经做过"
   },
   {
     "pattern": "〜で（place/means）",
@@ -130,7 +136,8 @@
     ],
     "tags": [
       "particle"
-    ]
+    ],
+    "meaning_zh": "在...地方/用...做"
   },
   {
     "pattern": "〜ている",
@@ -149,7 +156,8 @@
     ],
     "tags": [
       "progressive"
-    ]
+    ],
+    "meaning_zh": "正在做/处于状态"
   },
   {
     "pattern": "〜てください",
@@ -168,7 +176,8 @@
     ],
     "tags": [
       "request"
-    ]
+    ],
+    "meaning_zh": "请做"
   },
   {
     "pattern": "〜でした",
@@ -188,7 +197,8 @@
     "tags": [
       "past",
       "polite"
-    ]
+    ],
+    "meaning_zh": "过去是"
   },
   {
     "pattern": "〜ではありません",
@@ -208,7 +218,8 @@
     "tags": [
       "negative",
       "polite"
-    ]
+    ],
+    "meaning_zh": "不是"
   },
   {
     "pattern": "〜てはいけません",
@@ -227,7 +238,8 @@
     ],
     "tags": [
       "prohibition"
-    ]
+    ],
+    "meaning_zh": "不可以做"
   },
   {
     "pattern": "〜てもいいです",
@@ -246,7 +258,8 @@
     ],
     "tags": [
       "permission"
-    ]
+    ],
+    "meaning_zh": "可以做"
   },
   {
     "pattern": "〜と（and/with）",
@@ -265,7 +278,8 @@
     ],
     "tags": [
       "conjunction"
-    ]
+    ],
+    "meaning_zh": "和；与；同…一起"
   },
   {
     "pattern": "〜なくてもいいです",
@@ -284,7 +298,8 @@
     ],
     "tags": [
       "permission"
-    ]
+    ],
+    "meaning_zh": "不必做"
   },
   {
     "pattern": "〜なければなりません / 〜なくてはいけません",
@@ -303,7 +318,8 @@
     ],
     "tags": [
       "obligation"
-    ]
+    ],
+    "meaning_zh": "必须做"
   },
   {
     "pattern": "〜に（time/destination）",
@@ -322,7 +338,8 @@
     ],
     "tags": [
       "particle"
-    ]
+    ],
+    "meaning_zh": "表示时间点、目的地或动作对象"
   },
   {
     "pattern": "〜ましょう",
@@ -341,7 +358,8 @@
     ],
     "tags": [
       "invitation"
-    ]
+    ],
+    "meaning_zh": "提议做"
   },
   {
     "pattern": "〜ませんか",
@@ -360,7 +378,8 @@
     ],
     "tags": [
       "invitation"
-    ]
+    ],
+    "meaning_zh": "提议做？"
   },
   {
     "pattern": "〜を（object particle）",
@@ -379,6 +398,7 @@
     ],
     "tags": [
       "particle"
-    ]
+    ],
+    "meaning_zh": "标记动词的直接宾语"
   }
 ]

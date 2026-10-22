@@ -17,7 +17,8 @@
     "tags": [
       "risk",
       "possibility"
-    ]
+    ],
+    "meaning_zh": "可能"
   },
   {
     "pattern": "〜かのようだ",
@@ -37,7 +38,8 @@
     "tags": [
       "metaphor",
       "appearance"
-    ]
+    ],
+    "meaning_zh": "仿佛"
   },
   {
     "pattern": "〜ずにはいられない",
@@ -57,7 +59,8 @@
     "tags": [
       "emotion",
       "compulsion"
-    ]
+    ],
+    "meaning_zh": "忍不住"
   },
   {
     "pattern": "〜にわたって",
@@ -77,7 +80,8 @@
     "tags": [
       "span",
       "range"
-    ]
+    ],
+    "meaning_zh": "贯穿"
   },
   {
     "pattern": "〜に沿って",
@@ -97,7 +101,8 @@
     "tags": [
       "direction",
       "conformity"
-    ]
+    ],
+    "meaning_zh": "沿袭"
   },
   {
     "pattern": "〜に応じて",
@@ -117,7 +122,8 @@
     "tags": [
       "proportion",
       "adaptation"
-    ]
+    ],
+    "meaning_zh": "视情况"
   },
   {
     "pattern": "〜に加えて",
@@ -136,7 +142,8 @@
     ],
     "tags": [
       "addition"
-    ]
+    ],
+    "meaning_zh": "另外"
   },
   {
     "pattern": "〜に基づいて",
@@ -155,7 +162,8 @@
     ],
     "tags": [
       "basis"
-    ]
+    ],
+    "meaning_zh": "基于"
   },
   {
     "pattern": "〜に際して",
@@ -175,7 +183,8 @@
     "tags": [
       "formal",
       "timing"
-    ]
+    ],
+    "meaning_zh": "在...时候"
   },
   {
     "pattern": "〜に至って",
@@ -195,7 +204,8 @@
     "tags": [
       "advanced-timing",
       "formal"
-    ]
+    ],
+    "meaning_zh": "说到"
   },
   {
     "pattern": "〜に代わって",
@@ -214,7 +224,8 @@
     ],
     "tags": [
       "substitution"
-    ]
+    ],
+    "meaning_zh": "代替"
   },
   {
     "pattern": "〜に伴って",
@@ -233,7 +244,8 @@
     ],
     "tags": [
       "accompaniment"
-    ]
+    ],
+    "meaning_zh": "伴随"
   },
   {
     "pattern": "〜に反して",
@@ -252,7 +264,8 @@
     ],
     "tags": [
       "contrast"
-    ]
+    ],
+    "meaning_zh": "相反"
   },
   {
     "pattern": "〜をきっかけに",
@@ -272,7 +285,8 @@
     "tags": [
       "opportunity",
       "trigger"
-    ]
+    ],
+    "meaning_zh": "由...引起"
   },
   {
     "pattern": "〜をめぐって",
@@ -292,7 +306,8 @@
     "tags": [
       "topic",
       "controversy"
-    ]
+    ],
+    "meaning_zh": "关于"
   },
   {
     "pattern": "〜を禁じえない",
@@ -312,7 +327,8 @@
     "tags": [
       "emotion",
       "formal"
-    ]
+    ],
+    "meaning_zh": "忍不住"
   },
   {
     "pattern": "〜を除いて",
@@ -331,7 +347,8 @@
     ],
     "tags": [
       "exception"
-    ]
+    ],
+    "meaning_zh": "除掉这个"
   },
   {
     "pattern": "〜を通して",
@@ -351,7 +368,8 @@
     "tags": [
       "means",
       "span"
-    ]
+    ],
+    "meaning_zh": "通过这个"
   },
   {
     "pattern": "〜を通じて",
@@ -371,7 +389,8 @@
     "tags": [
       "means",
       "span"
-    ]
+    ],
+    "meaning_zh": "通过这个"
   },
   {
     "pattern": "〜を余儀なくされる",
@@ -391,6 +410,7 @@
     "tags": [
       "compulsion",
       "formal"
-    ]
+    ],
+    "meaning_zh": "不得不做"
   }
 ]

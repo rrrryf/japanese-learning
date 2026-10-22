@@ -2,7 +2,26 @@
 
 无第三方依赖（只用 Python 标准库），不引入 pytest。
 
-## 怎么跑
+有两套：
+
+| 文件 | 需要什么 | 跑什么 |
+|---|---|---|
+| `test_units.py` | 只要 Python | 纯函数单元测试：活用生成、模考数据校验、日志读写、答案分布 |
+| `test_api.py` | 已启动的服务 + 完整词典 | 接口回归：输入边界、CSRF、并发、导入等 |
+
+CI（`.github/workflows/tests.yml`）自动跑 `test_units.py` + 语法检查；
+`test_api.py` 因为要先下载 JMdict，配成手动触发。
+
+## 单元测试
+
+```powershell
+python tests/test_units.py
+```
+
+覆盖评审里出现过的那几类 bug：`conjugator` 的サ变词干、`mock_exam._normalize`
+的选项/答案校验、`weakness.save_session` 是否还双写 jsonl、模考答案是否集中在某个选项。
+
+## 接口回归
 
 在项目根目录：
 

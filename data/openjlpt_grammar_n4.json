@@ -16,7 +16,8 @@
     ],
     "tags": [
       "decision"
-    ]
+    ],
+    "meaning_zh": "决定做"
   },
   {
     "pattern": "〜ずに",
@@ -36,7 +37,8 @@
     "tags": [
       "negative",
       "condition"
-    ]
+    ],
+    "meaning_zh": "不做..."
   },
   {
     "pattern": "〜そうだ（appearance）",
@@ -55,7 +57,8 @@
     ],
     "tags": [
       "appearance"
-    ]
+    ],
+    "meaning_zh": "看起来好像…（凭外观判断）"
   },
   {
     "pattern": "〜つもり",
@@ -74,7 +77,8 @@
     ],
     "tags": [
       "intention"
-    ]
+    ],
+    "meaning_zh": "打算做"
   },
   {
     "pattern": "〜てあげる",
@@ -94,7 +98,8 @@
     "tags": [
       "giving",
       "favor"
-    ]
+    ],
+    "meaning_zh": "给别人做"
   },
   {
     "pattern": "〜ていく",
@@ -114,7 +119,8 @@
     "tags": [
       "direction",
       "continuation"
-    ]
+    ],
+    "meaning_zh": "去做并离开"
   },
   {
     "pattern": "〜ておく",
@@ -133,7 +139,8 @@
     ],
     "tags": [
       "preparation"
-    ]
+    ],
+    "meaning_zh": "提前做好"
   },
   {
     "pattern": "〜てくる",
@@ -153,7 +160,8 @@
     "tags": [
       "direction",
       "beginning"
-    ]
+    ],
+    "meaning_zh": "来做并返回"
   },
   {
     "pattern": "〜てくれる",
@@ -173,7 +181,8 @@
     "tags": [
       "receiving",
       "favor"
-    ]
+    ],
+    "meaning_zh": "帮我做某事"
   },
   {
     "pattern": "〜てしまう",
@@ -193,7 +202,8 @@
     "tags": [
       "completion",
       "regret"
-    ]
+    ],
+    "meaning_zh": "做了且后悔"
   },
   {
     "pattern": "〜てみる",
@@ -212,7 +222,8 @@
     ],
     "tags": [
       "attempt"
-    ]
+    ],
+    "meaning_zh": "尝试做某事"
   },
   {
     "pattern": "〜てもらう",
@@ -232,7 +243,8 @@
     "tags": [
       "receiving",
       "favor"
-    ]
+    ],
+    "meaning_zh": "接受别人帮忙"
   },
   {
     "pattern": "〜に違いない",
@@ -251,7 +263,8 @@
     ],
     "tags": [
       "certainty"
-    ]
+    ],
+    "meaning_zh": "必须是；毫无疑问"
   },
   {
     "pattern": "〜に決まっている",
@@ -270,7 +283,8 @@
     ],
     "tags": [
       "certainty"
-    ]
+    ],
+    "meaning_zh": "一定；必须；毫无疑问"
   },
   {
     "pattern": "〜みたい",
@@ -290,7 +304,8 @@
     "tags": [
       "similarity",
       "appearance"
-    ]
+    ],
+    "meaning_zh": "像是；类似；似乎"
   },
   {
     "pattern": "〜らしい",
@@ -310,7 +325,8 @@
     "tags": [
       "hearsay",
       "typical"
-    ]
+    ],
+    "meaning_zh": "似乎；听说；典型的（比 みたい 正式）"
   },
   {
     "pattern": "〜わけにはいかない",
@@ -330,7 +346,8 @@
     "tags": [
       "obligation",
       "prohibition"
-    ]
+    ],
+    "meaning_zh": "不能；不可以"
   },
   {
     "pattern": "〜過ぎる",
@@ -349,7 +366,8 @@
     ],
     "tags": [
       "degree"
-    ]
+    ],
+    "meaning_zh": "太过；过多"
   },
   {
     "pattern": "〜中",
@@ -368,7 +386,8 @@
     ],
     "tags": [
       "progressive"
-    ]
+    ],
+    "meaning_zh": "在...期间"
   },
   {
     "pattern": "〜方",
@@ -387,6 +406,7 @@
     ],
     "tags": [
       "method"
-    ]
+    ],
+    "meaning_zh": "做...的方式"
   }
 ]

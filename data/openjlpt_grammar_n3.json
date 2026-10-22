@@ -17,7 +17,8 @@
     "tags": [
       "advice",
       "emphasis"
-    ]
+    ],
+    "meaning_zh": "应该是"
   },
   {
     "pattern": "〜ことはない",
@@ -37,7 +38,8 @@
     "tags": [
       "negation",
       "reassurance"
-    ]
+    ],
+    "meaning_zh": "不需要"
   },
   {
     "pattern": "〜そうにする",
@@ -57,7 +59,8 @@
     "tags": [
       "pretense",
       "appearance"
-    ]
+    ],
+    "meaning_zh": "假装"
   },
   {
     "pattern": "〜ところ",
@@ -77,7 +80,8 @@
     "tags": [
       "timing",
       "situation"
-    ]
+    ],
+    "meaning_zh": "时候；地方"
   },
   {
     "pattern": "〜について",
@@ -96,7 +100,8 @@
     ],
     "tags": [
       "topic"
-    ]
+    ],
+    "meaning_zh": "关于"
   },
   {
     "pattern": "〜によって",
@@ -117,7 +122,8 @@
       "means",
       "passive",
       "difference"
-    ]
+    ],
+    "meaning_zh": "凭借"
   },
   {
     "pattern": "〜によると",
@@ -136,7 +142,8 @@
     ],
     "tags": [
       "hearsay"
-    ]
+    ],
+    "meaning_zh": "根据"
   },
   {
     "pattern": "〜に対して",
@@ -156,7 +163,8 @@
     "tags": [
       "target",
       "contrast"
-    ]
+    ],
+    "meaning_zh": "针对"
   },
   {
     "pattern": "〜ばかり",
@@ -176,7 +184,8 @@
     "tags": [
       "limitation",
       "habit"
-    ]
+    ],
+    "meaning_zh": "只有；充满；倾向于"
   },
   {
     "pattern": "〜ばかりでなく",
@@ -195,7 +204,8 @@
     ],
     "tags": [
       "addition"
-    ]
+    ],
+    "meaning_zh": "不仅...还"
   },
   {
     "pattern": "〜ものだ",
@@ -215,7 +225,8 @@
     "tags": [
       "general-truth",
       "nostalgia"
-    ]
+    ],
+    "meaning_zh": "理所当然应该"
   },
   {
     "pattern": "〜ものではない",
@@ -235,7 +246,8 @@
     "tags": [
       "prohibition",
       "advice"
-    ]
+    ],
+    "meaning_zh": "不应该"
   },
   {
     "pattern": "〜よう",
@@ -255,7 +267,8 @@
     "tags": [
       "method",
       "purpose"
-    ]
+    ],
+    "meaning_zh": "方式；像；为了"
   },
   {
     "pattern": "〜ようにする",
@@ -275,7 +288,8 @@
     "tags": [
       "effort",
       "habit"
-    ]
+    ],
+    "meaning_zh": "务必做到；尽量"
   },
   {
     "pattern": "〜ようになる",
@@ -295,7 +309,8 @@
     "tags": [
       "change",
       "ability"
-    ]
+    ],
+    "meaning_zh": "逐渐能够；最终达到"
   },
   {
     "pattern": "〜らしい",
@@ -315,7 +330,8 @@
     "tags": [
       "hearsay",
       "appearance"
-    ]
+    ],
+    "meaning_zh": "似乎；听说；典型的（比 みたい 正式）"
   },
   {
     "pattern": "〜わけがない",
@@ -335,7 +351,8 @@
     "tags": [
       "impossibility",
       "strong-negation"
-    ]
+    ],
+    "meaning_zh": "不可能"
   },
   {
     "pattern": "〜わけだ",
@@ -355,7 +372,8 @@
     "tags": [
       "reason",
       "conclusion"
-    ]
+    ],
+    "meaning_zh": "理所当然"
   },
   {
     "pattern": "〜わけではない",
@@ -375,7 +393,8 @@
     "tags": [
       "negation",
       "nuance"
-    ]
+    ],
+    "meaning_zh": "并不意味着"
   },
   {
     "pattern": "〜一方",
@@ -394,6 +413,7 @@
     ],
     "tags": [
       "contrast"
-    ]
+    ],
+    "meaning_zh": "一方面"
   }
 ]

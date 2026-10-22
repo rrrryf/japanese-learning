@@ -2,6 +2,7 @@
 """JMdict lookup: search candidates and word detail."""
 from __future__ import annotations
 
+import json
 import sqlite3
 import sys
 import threading
@@ -153,6 +154,15 @@ def _has_cjk(s: str) -> bool:
     return any("\u4e00" <= ch <= "\u9fff" for ch in s)
 
 
+def _has_kana(s: str) -> bool:
+    """True if string contains hiragana or katakana."""
+    for ch in s:
+        o = ord(ch)
+        if 0x3041 <= o <= 0x309F or 0x30A1 <= o <= 0x30FF:
+            return True
+    return False
+
+
 def _is_latin_query(s: str) -> bool:
     """ASCII letters / spaces / hyphens only (English gloss search)."""
     if not s:
@@ -224,9 +234,11 @@ def _search_gloss_zh(
     # Rank: exact gloss / sense-tail match / short gloss / short headword
     rows = conn.execute(
         """
-        SELECT gz.word_form AS word_form, gz.gloss AS gloss, wf.seq AS seq
+        SELECT gz.word_form AS word_form, gz.gloss AS gloss, wf.seq AS seq,
+               jl.level AS lv
         FROM gloss_zh gz
         JOIN word_forms wf ON wf.word_form = gz.word_form
+        LEFT JOIN jlpt jl ON jl.word_form = gz.word_form
         WHERE gz.gloss LIKE '%' || ? || '%'
         ORDER BY
           CASE
@@ -239,6 +251,12 @@ def _search_gloss_zh(
             WHEN gz.gloss LIKE '% ' || ? || '；%' THEN 3
             ELSE 4
           END,
+          -- 常见词优先：JLPT N5..N1 依次靠前，不在词表里的排最后。
+          -- 否则搜「吃」第一条会是麻将用语「吃（チー）」而不是 食べる。
+          CASE COALESCE(jl.level, 'ZZ')
+            WHEN 'N5' THEN 0 WHEN 'N4' THEN 1 WHEN 'N3' THEN 2
+            WHEN 'N2' THEN 3 WHEN 'N1' THEN 4 ELSE 9
+          END,
           LENGTH(gz.gloss) ASC,
           LENGTH(gz.word_form) ASC,
           gz.word_form ASC
@@ -246,7 +264,7 @@ def _search_gloss_zh(
         """,
         (q, q, q, q, q, q, q, q, max(limit * 4, 40)),
     ).fetchall()
-    out: list[dict[str, Any]] = []
+    out: list[tuple[str | None, dict[str, Any]]] = []
     for r in rows:
         seq = int(r["seq"])
         if seq in seen:
@@ -259,10 +277,20 @@ def _search_gloss_zh(
         if zh:
             cand["gloss_first"] = zh
         seen.add(seq)
-        out.append(cand)
-        if len(out) >= limit:
+        lv = r["lv"] if "lv" in r.keys() else None
+        out.append((lv, cand))
+        if len(out) >= max(limit * 2, 20):
             break
-    return out
+
+    # 最终排序交给 Python：常见词优先（JLPT N5→N1），再按释义长度。
+    # 只靠 SQL 排序不够——候选去重/回表会打乱顺序，「吃」才会把麻将用语
+    # 排到 食べる 前面。
+    _ORDER = {"N5": 0, "N4": 1, "N3": 2, "N2": 3, "N1": 4}
+    out.sort(key=lambda item: (
+        _ORDER.get(item[0], 9),
+        len(str(item[1].get("gloss_first") or "")),
+    ))
+    return [cand for _, cand in out[:limit]]
 
 
 def _search_gloss_en(
@@ -338,8 +366,12 @@ def search(q: str, limit: int = 10) -> list[dict[str, Any]]:
         results.append(cand)
 
     remaining = limit - len(results)
-    # Chinese reverse: Han in query, or JP found nothing (pure Chinese gloss query)
-    if remaining > 0 and (_has_cjk(q) or not results):
+    # 中文反查的条件：
+    #   1) 日语侧没结果 —— 可能是纯中文查询（「漂亮」）
+    #   2) 查询里没有假名 —— 纯汉字/Latin 才可能是中文词
+    # 「食べる」这种含假名的日语查询，一旦命中就不必再扫 2.3 万行 gloss_zh
+    # （实测 食べる 208ms，跳过反查后回到 ~15ms）。
+    if remaining > 0 and (not results or (_has_cjk(q) and not _has_kana(q))):
         results.extend(_search_gloss_zh(conn, q, remaining, seen))
         remaining = limit - len(results)
 
@@ -359,7 +391,10 @@ def _detect_verb_type(senses: list[dict[str, Any]]) -> str | None:
     # Order matters: kuru/suru before generic Ichidan/Godan
     if "Kuru verb" in blob:
         return "kuru"
-    if "suru verb" in blob:
+    # 「勉強」「掃除」「料理」这类在 JMdict 里标的是
+    # "noun or participle which takes the aux. verb suru"（约 1.7 万条），
+    # 光认 "suru verb" 会让它们完全没有活用表。
+    if "suru verb" in blob or "takes the aux. verb suru" in blob:
         return "suru"
     if "Ichidan verb" in blob:
         return "ichidan"
@@ -382,26 +417,84 @@ def _ordered_conjugations(raw: dict[str, str]) -> dict[str, str]:
 def _fetch_examples(
     conn: sqlite3.Connection, forms: list[str], cap: int = 15
 ) -> list[dict[str, str]]:
-    """Query examples by each form substring; merge and dedupe."""
+    """按词形取例句。
+
+    坑：纯子串匹配下，「日」会命中「今日」「一日」这类无关句子。
+    对策：
+      1. 长词形优先——多字词的命中基本可信
+      2. 单字词形只作补充（最多 3 条，且只取短句），避免把结果占满
+      3. 同词形内按「词形出现位置 + 句子长度」排序，越靠前越可能真是它的例句
+    """
     seen: set[str] = set()
     examples: list[dict[str, str]] = []
-    for form in forms:
-        form = (form or "").strip()
-        if not form:
-            continue
+    cleaned = {f.strip() for f in forms if f and f.strip()}
+    ordered = sorted(cleaned, key=len, reverse=True)
+
+    def take(form: str, limit: int, max_len: int | None = None) -> int:
         rows = conn.execute(
             # instr() 与 LIKE '%%x%%' 同为全扫，但省掉 LIKE 的模式解析：实测 13.7ms -> 6.3ms
-            "SELECT jpn, cmn FROM examples WHERE instr(jpn, ?) > 0 LIMIT 20",
+            "SELECT jpn, cmn FROM examples WHERE instr(jpn, ?) > 0 LIMIT 40",
             (form,),
         ).fetchall()
+        scored = []
         for row in rows:
             jpn = row["jpn"] or ""
             if not jpn or jpn in seen:
                 continue
+            if max_len is not None and len(jpn) > max_len:
+                continue
+            pos = jpn.find(form)
+            scored.append((pos if pos >= 0 else 999, len(jpn), jpn, row["cmn"] or ""))
+        scored.sort()
+        added = 0
+        for _, _, jpn, cmn in scored:
+            if jpn in seen:
+                continue
+            seen.add(jpn)
+            examples.append({"jpn": jpn, "cmn": cmn})
+            added += 1
+            if added >= limit or len(examples) >= cap:
+                break
+        return added
+
+    # 第一轮：多字词形
+    for form in ordered:
+        if len(form) < 2:
+            continue
+        take(form, cap)
+        if len(examples) >= cap:
+            return examples
+
+    # 第二轮：单字词形兜底。
+    # 单字假名（ひ/に/を）没有独立语义，子串匹配必然跑偏，直接跳过；
+    # 单字汉字（日/手/目）只接受「句首或标点/空格之后」的位置，
+    # 这样「日曜日」还能命中，但「今日は」「一日に」会被排除。
+    def at_word_start(jpn: str, form: str) -> bool:
+        if jpn.startswith(form):
+            return True
+        return any(sep + form in jpn for sep in "、。！？ 　「『（(")
+
+    for form in ordered:
+        if len(form) >= 2 or _has_kana(form):
+            continue
+        rows = conn.execute(
+            "SELECT jpn, cmn FROM examples WHERE instr(jpn, ?) > 0 LIMIT 200",
+            (form,),
+        ).fetchall()
+        added = 0
+        for row in rows:
+            jpn = row["jpn"] or ""
+            if not jpn or jpn in seen or len(jpn) > 24:
+                continue
+            if not at_word_start(jpn, form):
+                continue
             seen.add(jpn)
             examples.append({"jpn": jpn, "cmn": row["cmn"] or ""})
-            if len(examples) >= cap:
-                return examples
+            added += 1
+            if added >= 2 or len(examples) >= cap:
+                break
+        if len(examples) >= cap:
+            break
     return examples
 
 
@@ -490,12 +583,22 @@ def _grammar_item(r) -> dict[str, Any]:
     conn = ""
     if "connection" in keys and r["connection"]:
         conn = str(r["connection"])
+    examples = []
+    if "examples" in keys and r["examples"]:
+        try:
+            parsed = json.loads(r["examples"])
+            if isinstance(parsed, list):
+                examples = [e for e in parsed if isinstance(e, dict) and e.get("ja")]
+        except ValueError:
+            examples = []
     return {
         "id": int(r["id"]),
         "pattern": (r["pattern"] or ""),
         "explain": (r["explain"] or ""),
+        "explain_zh": (r["explain_zh"] if "explain_zh" in keys and r["explain_zh"] else None),
         "level": (lvl or None),
         "connection": conn or None,
+        "examples": examples,
     }
 
 
@@ -586,7 +689,8 @@ def get_grammar(gid: int) -> dict[str, Any] | None:
     """Single grammar row by id, or None."""
     conn = _db()
     row = conn.execute(
-        "SELECT id, pattern, explain, level, connection FROM grammar WHERE id = ?",
+        "SELECT id, pattern, explain, level, connection, examples, explain_zh "
+        "FROM grammar WHERE id = ?",
         (int(gid),),
     ).fetchone()
     if row is None:
@@ -637,28 +741,36 @@ def list_jlpt(level: str, limit: int = 30) -> list[dict[str, Any]]:
     limit = max(1, min(int(limit), 200))
     conn = _db()
 
-    # One row per seq; prefer the jlpt word_form that matched
+    # 先随机挑 seq（只扫 jlpt+word_forms），再回表取字段。
+    # 直接在 JOIN 后 ORDER BY RANDOM() 会先把 entries 全连一遍再随机，白做很多工作。
     rows = conn.execute(
         """
-        SELECT wf.seq AS seq, MIN(j.word_form) AS word_form
-        FROM jlpt j
-        JOIN word_forms wf ON wf.word_form = j.word_form
-        WHERE j.level = ?
-        GROUP BY wf.seq
-        ORDER BY RANDOM()
-        LIMIT ?
+        WITH picked AS (
+          SELECT DISTINCT wf.seq AS seq
+          FROM jlpt j
+          JOIN word_forms wf ON wf.word_form = j.word_form
+          WHERE j.level = ?
+          ORDER BY RANDOM()
+          LIMIT ?
+        )
+        SELECT p.seq AS seq,
+               e.kanji AS kanji,
+               e.kana AS kana,
+               (SELECT j2.word_form FROM jlpt j2
+                 JOIN word_forms w2 ON w2.word_form = j2.word_form
+                WHERE w2.seq = p.seq AND j2.level = ? LIMIT 1) AS word_form
+        FROM picked p
+        JOIN entries e ON e.seq = p.seq
         """,
-        (level, limit),
+        (level, limit, level),
     ).fetchall()
 
     results: list[dict[str, Any]] = []
     for r in rows:
         seq = int(r["seq"])
         word_form = (r["word_form"] or "").strip()
-        entry = conn.execute(
-            "SELECT kanji, kana FROM entries WHERE seq = ?", (seq,)
-        ).fetchone()
-        if not entry:
+        entry = {"kanji": r["kanji"], "kana": r["kana"]}
+        if entry["kanji"] is None and entry["kana"] is None:
             continue
         kanji_list = _split_pipe(entry["kanji"])
         kana_list = _split_pipe(entry["kana"])

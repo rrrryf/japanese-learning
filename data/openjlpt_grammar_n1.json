@@ -17,7 +17,8 @@
     "tags": [
       "side-activity",
       "formal"
-    ]
+    ],
+    "meaning_zh": "同时进行"
   },
   {
     "pattern": "〜がち",
@@ -36,7 +37,8 @@
     ],
     "tags": [
       "tendency"
-    ]
+    ],
+    "meaning_zh": "容易"
   },
   {
     "pattern": "〜がてら",
@@ -56,7 +58,8 @@
     "tags": [
       "opportunity",
       "on-the-way"
-    ]
+    ],
+    "meaning_zh": "趁机"
   },
   {
     "pattern": "〜かねる",
@@ -76,7 +79,8 @@
     "tags": [
       "polite-refusal",
       "formal"
-    ]
+    ],
+    "meaning_zh": "不能"
   },
   {
     "pattern": "〜が早いか",
@@ -96,7 +100,8 @@
     "tags": [
       "immediacy",
       "formal"
-    ]
+    ],
+    "meaning_zh": "一...就"
   },
   {
     "pattern": "〜ずくめ",
@@ -115,7 +120,8 @@
     ],
     "tags": [
       "abundance"
-    ]
+    ],
+    "meaning_zh": "全是"
   },
   {
     "pattern": "〜すら",
@@ -135,7 +141,8 @@
     "tags": [
       "emphasis",
       "negative"
-    ]
+    ],
+    "meaning_zh": "连...都不"
   },
   {
     "pattern": "〜たところで",
@@ -155,7 +162,8 @@
     "tags": [
       "concessive",
       "negative"
-    ]
+    ],
+    "meaning_zh": "即使"
   },
   {
     "pattern": "〜だらけ",
@@ -175,7 +183,8 @@
     "tags": [
       "abundance",
       "negative"
-    ]
+    ],
+    "meaning_zh": "满是；覆盖着；有很多（带负面意味）"
   },
   {
     "pattern": "〜たら最後",
@@ -195,7 +204,8 @@
     "tags": [
       "irreversible",
       "emphasis"
-    ]
+    ],
+    "meaning_zh": "一旦...就；一...就"
   },
   {
     "pattern": "〜た末",
@@ -215,7 +225,8 @@
     "tags": [
       "result",
       "process"
-    ]
+    ],
+    "meaning_zh": "最终；结果是"
   },
   {
     "pattern": "〜てからというもの",
@@ -235,7 +246,8 @@
     "tags": [
       "since",
       "change"
-    ]
+    ],
+    "meaning_zh": "自那时起；自从"
   },
   {
     "pattern": "〜てやまない",
@@ -255,7 +267,8 @@
     "tags": [
       "emotion",
       "continuity"
-    ]
+    ],
+    "meaning_zh": "一直做"
   },
   {
     "pattern": "〜ともなると",
@@ -275,7 +288,8 @@
     "tags": [
       "condition",
       "emphasis"
-    ]
+    ],
+    "meaning_zh": "说到...；当...的时候"
   },
   {
     "pattern": "〜と相まって",
@@ -295,7 +309,8 @@
     "tags": [
       "combination",
       "formal"
-    ]
+    ],
+    "meaning_zh": "和...一起；与...结合"
   },
   {
     "pattern": "〜ならでは",
@@ -314,7 +329,8 @@
     ],
     "tags": [
       "uniqueness"
-    ]
+    ],
+    "meaning_zh": "只有...才；特有的"
   },
   {
     "pattern": "〜べく",
@@ -334,7 +350,8 @@
     "tags": [
       "purpose",
       "formal"
-    ]
+    ],
+    "meaning_zh": "为了；旨在"
   },
   {
     "pattern": "〜まい",
@@ -354,7 +371,8 @@
     "tags": [
       "negative-volition",
       "prediction"
-    ]
+    ],
+    "meaning_zh": "不会；别"
   },
   {
     "pattern": "〜ものなら",
@@ -374,7 +392,8 @@
     "tags": [
       "hypothetical",
       "challenge"
-    ]
+    ],
+    "meaning_zh": "要是能；但愿能"
   },
   {
     "pattern": "〜ようによっては",
@@ -394,6 +413,7 @@
     "tags": [
       "condition",
       "perspective"
-    ]
+    ],
+    "meaning_zh": "视情况而定；依方式而定"
   }
 ]

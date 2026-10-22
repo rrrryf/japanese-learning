@@ -52,7 +52,7 @@ conn.execute("CREATE INDEX idx_word_forms_seq ON word_forms(seq)")
 # --- 增强表（空壳，setup_data.py 会填充）--------------------------------
 conn.execute(
     "CREATE TABLE grammar (id INTEGER PRIMARY KEY, pattern TEXT, explain TEXT, "
-    "level TEXT, connection TEXT)"
+    "level TEXT, connection TEXT, examples TEXT, explain_zh TEXT)"
 )
 conn.execute("CREATE INDEX idx_grammar_level ON grammar(level)")
 conn.execute("CREATE TABLE jlpt (word_form TEXT PRIMARY KEY, level TEXT)")

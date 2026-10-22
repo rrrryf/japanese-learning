@@ -93,15 +93,11 @@ def save_session(log_dir: Path, payload: dict[str, Any]) -> dict[str, Any]:
             n += 1
         if "id" not in payload:
             payload["id"] = path.stem
-        jsonl_path = log_dir / "sessions.jsonl"
         try:
             path.write_text(
                 json.dumps(payload, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
-            with jsonl_path.open("a", encoding="utf-8") as f:
-                f.write(json.dumps(payload, ensure_ascii=False) + "\n")
-                f.flush()
         except OSError:
             try:
                 path.unlink(missing_ok=True)
@@ -137,12 +133,31 @@ def load_sessions(log_dir: Path, limit: int = 50) -> list[dict[str, Any]]:
         return _load_sessions_unlocked(log_dir, limit)
 
 
+def _tail_lines(path: Path, max_bytes: int = 256 * 1024) -> list[str]:
+    """只读文件末尾若干字节的行，避免长期使用后把整个 jsonl 读进内存。"""
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return []
+    try:
+        with path.open("rb") as f:
+            if size > max_bytes:
+                f.seek(-max_bytes, 2)
+                f.readline()          # 丢掉可能被截断的半行
+            data = f.read()
+    except OSError:
+        return []
+    return data.decode("utf-8", "replace").splitlines()
+
+
 def _load_sessions_unlocked(log_dir: Path, limit: int) -> list[dict[str, Any]]:
     sessions: list[dict[str, Any]] = []
+    # 旧版本每个 session 会双写一份到 sessions.jsonl。现在只写单个 .json，
+    # 这里仍然读它（老数据不能丢），但只取末尾 256KB，不再整文件读入。
     jsonl = log_dir / "sessions.jsonl"
     if jsonl.is_file():
         try:
-            lines = jsonl.read_text(encoding="utf-8").splitlines()
+            lines = _tail_lines(jsonl)
             for line in reversed(lines):
                 line = line.strip()
                 if not line:

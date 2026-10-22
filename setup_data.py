@@ -41,7 +41,7 @@ DEFAULT_URL = "http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz"
 REQUIRED_TABLES = {
     "grammar": (
         "CREATE TABLE IF NOT EXISTS grammar (id INTEGER PRIMARY KEY, pattern TEXT, "
-        "explain TEXT, level TEXT, connection TEXT)"
+        "explain TEXT, level TEXT, connection TEXT, examples TEXT, explain_zh TEXT)"
     ),
     "jlpt": "CREATE TABLE IF NOT EXISTS jlpt (word_form TEXT PRIMARY KEY, level TEXT)",
     "gloss_zh": "CREATE TABLE IF NOT EXISTS gloss_zh (word_form TEXT PRIMARY KEY, accent TEXT, gloss TEXT)",
@@ -104,13 +104,20 @@ def import_grammar(conn: sqlite3.Connection) -> int:
             pattern = (item.get("pattern") or "").strip()
             if not pattern:
                 continue
+            # examples 里是 [{ja, en}, ...]，原样存 JSON，前端直接渲染
+            examples = item.get("examples")
+            examples_json = (json.dumps(examples, ensure_ascii=False)
+                             if isinstance(examples, list) and examples else None)
             conn.execute(
-                "INSERT INTO grammar (pattern, explain, level, connection) VALUES (?,?,?,?)",
+                "INSERT INTO grammar (pattern, explain, level, connection, examples, explain_zh)"
+                " VALUES (?,?,?,?,?,?)",
                 (
                     pattern,
                     (item.get("meaning") or "").strip() or None,
                     (item.get("level") or level.upper()).strip() or None,
                     (item.get("formation") or "").strip() or None,
+                    examples_json,
+                    (item.get("meaning_zh") or "").strip() or None,
                 ),
             )
             total += 1
@@ -209,6 +216,11 @@ def main() -> int:
     try:
         for ddl in REQUIRED_TABLES.values():
             conn.execute(ddl)
+        # 老库没有这几列，补上（SQLite 加列是幂等的，重复会报错所以先查）
+        existing = {r[1] for r in conn.execute("PRAGMA table_info(grammar)")}
+        for col in ("examples", "explain_zh"):
+            if col not in existing:
+                conn.execute(f"ALTER TABLE grammar ADD COLUMN {col} TEXT")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_grammar_level ON grammar(level)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_examples_jpn ON examples(jpn)")
         existed = conn.execute("SELECT COUNT(*) FROM grammar").fetchone()[0]
@@ -227,6 +239,11 @@ def main() -> int:
     try:
         for ddl in REQUIRED_TABLES.values():
             conn.execute(ddl)
+        # 老库没有这几列，补上（SQLite 加列是幂等的，重复会报错所以先查）
+        existing = {r[1] for r in conn.execute("PRAGMA table_info(grammar)")}
+        for col in ("examples", "explain_zh"):
+            if col not in existing:
+                conn.execute(f"ALTER TABLE grammar ADD COLUMN {col} TEXT")
         import_jsonl(conn, "jlpt", DATA / "jlpt_words.jsonl.gz", ["word_form", "level"])
         import_jsonl(conn, "gloss_zh", DATA / "gloss_zh.jsonl.gz",
                      ["word_form", "accent", "gloss"])

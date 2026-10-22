@@ -1,0 +1,59 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit:
+    name: 单元测试 + 语法检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r web/requirements.txt
+
+      - name: Python 语法检查
+        run: python -m compileall -q web scripts build_db.py setup_data.py conjugator.py
+
+      - name: 单元测试（不需要词典库）
+        run: python tests/test_units.py
+
+  integration:
+    name: 接口回归（需下载词典，可手动触发）
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r web/requirements.txt
+
+      - name: 准备数据（下载 JMdict 并建库）
+        run: python setup_data.py
+
+      - name: 跑接口回归
+        run: |
+          chmod +x run_tests.ps1 || true
+          python web/main.py --help >/dev/null 2>&1 || true
+          (cd web && python -m uvicorn main:app --host 127.0.0.1 --port 8765 &) 
+          for i in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:8765/api/jlpt/counts >/dev/null; then break; fi
+            sleep 1
+          done
+          python tests/test_api.py --base http://127.0.0.1:8765

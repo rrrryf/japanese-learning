@@ -69,7 +69,9 @@ def _o(k):
 
 
 def guess(kana):
-    if kana == "する":
+    # サ変：する / 愛する / 勉強する —— 只要以「する」结尾都算，
+    # 「かす」「あせる」这类五段词不会以「する」结尾，不会误判。
+    if kana.endswith("する"):
         return "suru"
     if kana == "くる":
         return "kuru"
@@ -78,9 +80,9 @@ def guess(kana):
     if kana in GODAN_RU_EXCEPTIONS:
         return "godan"
     prev = kana[-2] if len(kana) >= 2 else ""
-    if prev in "いきしちにひみり":   # い段
+    if prev in "いきしちにひみりぎじぢびぴ":   # い段（含浊音/半浊音）
         return "ichidan"
-    if prev in "えけせてねへめれ":   # え段
+    if prev in "えけせてねへめれげぜでべぺ":   # え段（含浊音/半浊音）
         return "ichidan"
     return "godan"
 
@@ -90,11 +92,17 @@ def conjugate(kana, vtype="auto"):
         vtype = guess(kana)
 
     if vtype == "suru":
+        # サ変要保留词干：愛する → 愛します（不是「します」）。
+        # 传进来的可能已经是「あいする」，也可能只有词干「あい」，两种都兼容。
+        stem = kana[:-2] if kana.endswith("する") else kana
+        tail = f"{stem}する" if stem else "する"
         return {
-            "基本形": "する", "ます形": "します", "ない形": "しない",
-            "て形": "して", "た形": "した", "可能形": "できる",
-            "被动形": "される", "使役形": "させる", "意志形": "しよう",
-            "命令形": "しろ", "ば形": "すれば",
+            "基本形": tail, "ます形": stem + "します", "ない形": stem + "しない",
+            "て形": stem + "して", "た形": stem + "した",
+            "可能形": stem + "できる",
+            "被动形": stem + "される", "使役形": stem + "させる",
+            "意志形": stem + "しよう", "命令形": stem + "しろ",
+            "ば形": stem + "すれば",
         }
     if vtype == "kuru":
         return {
