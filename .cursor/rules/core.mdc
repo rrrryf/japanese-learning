@@ -13,9 +13,9 @@ alwaysApply: true
 
 | | 私有版 | 公开版（本仓库） |
 |---|---|---|
-| 路径 | `<path>\jmdict` | `<path>\japanese-learning-public` |
+| 路径 | `<自用版目录>` | `<本仓库目录>` |
 | 端口 | 8765 | 8766 |
-| 模块考卷 | 在线题库 在线题库（需 token） | 本地 JSON + 用户导入 |
+| 模块考卷 | 在线题库（自用版，需账号） | 本地 JSON + 用户导入 |
 | 语法数据 | thesaurus 887 条 | `data/openjlpt_grammar_*.json` 100 条 |
 | 用途 | 自用 | 对外分发 |
 

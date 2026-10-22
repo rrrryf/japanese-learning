@@ -33,9 +33,9 @@
 
 | | 私有版 | 公开版（**默认改这个**） |
 |---|---|---|
-| 路径 | `<path>\jmdict` | `<path>\japanese-learning-public` |
+| 路径 | `<自用版目录>` | `<本仓库目录>` |
 | 端口 | 8765 | 8766 |
-| 模考 | 在线题库 在线题库（付费，需 token） | 本地 JSON 示例卷 + 用户导入 |
+| 模考 | 在线真题（自用版，付费，需账号） | 本地 JSON 示例卷 + 用户导入 |
 | 语法数据 | thesaurus 887 条 | `data/openjlpt_grammar_*.json` 100 条 |
 | 用途 | 自己刷题 | 对外分发 |
 
@@ -205,7 +205,7 @@ idx_examples_jpn(jpn)
 
 ### T4 · 私有版单元测试适配
 
-**现状**：私有版没有 `mock_exam.py`（走 在线题库 API），直接复制 `test_units.py` 会
+**现状**：私有版没有 `mock_exam.py`（走在线真题接口），直接复制 `test_units.py` 会
 `ModuleNotFoundError`。
 
 **做法**：`mock_exam` 相关用例用 `try: import mock_exam / except ImportError: skip` 包起来。

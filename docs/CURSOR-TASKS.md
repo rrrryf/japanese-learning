@@ -130,7 +130,7 @@ Composer 模式下它能一次改 10 个文件，但一次给它 5 个任务，�
 
 ### T4 · 私有版单元测试适配
 
-**现状**：私有版没有 `mock_exam.py`（走 在线题库 API），直接复制 `test_units.py` 会
+**现状**：私有版没有 `mock_exam.py`（走在线真题接口），直接复制 `test_units.py` 会
 `ModuleNotFoundError`。
 
 **做法**：私有版那份改成只测 `conjugator` + `weakness`，`mock_exam` 相关用例用

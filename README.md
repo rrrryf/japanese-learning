@@ -236,7 +236,6 @@ japanese-learning/
   data/                     # 语法 JSON + 分级/释义/例句（gzip JSONL，约 1.4MB）
   scripts/eval_explain.py   # 讲解评测脚本
   docs/screenshots/         # 界面截图
-  docs/HANDOFF.md           # 架构与开发交接说明
   web/
     main.py                 # FastAPI 路由
     lookup.py               # 查词 / 语法 / 例句查询
