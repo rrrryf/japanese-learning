@@ -77,6 +77,7 @@
     studyBar: document.getElementById("study-bar"),
     studyProgressText: document.getElementById("study-progress-text"),
     btnKnown: document.getElementById("btn-known"),
+    btnFuzzy: document.getElementById("btn-fuzzy"),
     btnUnknown: document.getElementById("btn-unknown"),
     studyEndStats: document.getElementById("study-end-stats"),
     btnStudyAgain: document.getElementById("btn-study-again"),
@@ -155,6 +156,8 @@
   let sessionFlipped = false;
   let sessionKnown = 0;
   let sessionUnknown = 0;
+    sessionFuzzy = 0;
+  let sessionFuzzy = 0;
   /** @type {string|null} */
   let lastSource = null;
   /** @type {"normal"|"daily"|"review"} */
@@ -271,6 +274,18 @@
     const cur = map[key] || { box: 0, due: todayISO() };
     const newBox = Math.min(4, (cur.box || 0) + 1);
     map[key] = { box: newBox, due: addDaysISO(todayISO(), BOX_DELAYS[newBox]) };
+    setStudyMap(map);
+  }
+
+  function markFuzzy(seq) {
+    // 模糊：等级不变，间隔减半（至少 1 天再复习）
+    const map = getStudyMap();
+    const key = String(seq);
+    const cur = map[key] || { box: 0, due: todayISO() };
+    const box = cur.box || 0;
+    const base = BOX_DELAYS[box] || 1;
+    const gap = Math.max(1, Math.round(base / 2));
+    map[key] = { box, due: addDaysISO(todayISO(), gap) };
     setStudyMap(map);
   }
 
@@ -1041,12 +1056,18 @@
     if (el.fcTap) el.fcTap.textContent = sessionFlipped ? "再点可隐藏释义" : "点击显示释义";
   }
 
-  function answer(known) {
+  function answer(result) {
     const card = sessionQueue[sessionIndex];
     if (!card) return;
-    if (known) {
+    // result: "known" | "fuzzy" | "unknown"（兼容旧的 true/false）
+    if (result === true) result = "known";
+    if (result === false) result = "unknown";
+    if (result === "known") {
       markKnown(card.seq);
       sessionKnown += 1;
+    } else if (result === "fuzzy") {
+      markFuzzy(card.seq);
+      sessionFuzzy += 1;
     } else {
       markUnknown(card.seq);
       sessionUnknown += 1;
@@ -1062,7 +1083,8 @@
   }
 
   function finishSession() {
-    el.studyEndStats.textContent = `认识 ${sessionKnown} · 不认识 ${sessionUnknown} · 共 ${sessionQueue.length} 词`;
+    el.studyEndStats.textContent =
+      `认识 ${sessionKnown} · 模糊 ${sessionFuzzy} · 不认识 ${sessionUnknown} · 共 ${sessionQueue.length} 词`;
     showStudyPane("end");
     refreshDailyUI();
   }
@@ -1126,10 +1148,18 @@
     for (const item of items) {
       const li = document.createElement("li");
       li.className = "cand";
+      // 活用形反查命中时提示「食べた ← 食べる（た形）」
+      const infl = item.inflection;
+      const inflTag = infl
+        ? `<span class="cand-infl" title="这个词是活用形，点进去看辞书形">` +
+          `${escapeHtml(infl.form)} ← ${escapeHtml(infl.base)}（${escapeHtml(infl.kind)}）` +
+          `</span>`
+        : "";
       li.innerHTML = `
         <span class="w">${escapeHtml(item.word_form || "")}</span>
         <span class="k">${escapeHtml(item.kana || "")}</span>
         <span class="g">${escapeHtml(item.gloss_first || "")}</span>
+        ${inflTag}
       `;
       li.addEventListener("click", () => {
         location.hash = `#/word/${item.seq}`;
@@ -1769,8 +1799,9 @@
   if (el.flashcard) {
     el.flashcard.addEventListener("click", () => flipCard());
   }
-  if (el.btnKnown) el.btnKnown.addEventListener("click", () => answer(true));
-  if (el.btnUnknown) el.btnUnknown.addEventListener("click", () => answer(false));
+  if (el.btnKnown) el.btnKnown.addEventListener("click", () => answer("known"));
+  if (el.btnFuzzy) el.btnFuzzy.addEventListener("click", () => answer("fuzzy"));
+  if (el.btnUnknown) el.btnUnknown.addEventListener("click", () => answer("unknown"));
 
   if (el.btnStudyAgain) {
     el.btnStudyAgain.addEventListener("click", () => {

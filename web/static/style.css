@@ -2831,3 +2831,23 @@ body.detail-screen .shell {
   border-radius: 4px;
   vertical-align: middle;
 }
+
+/* 活用形反查提示：食べた ← 食べる（た形） */
+.cand-infl {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+
+/* 三档打分：模糊 */
+.study-btn.fuzzy {
+  background: #fff4e5;
+  color: #b26a00;
+  border-color: #f0c98a;
+}
+
+.study-btn.fuzzy:hover {
+  background: #ffe8cc;
+}

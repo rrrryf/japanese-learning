@@ -299,6 +299,23 @@ def main() -> int:
     finally:
         conn.close()
 
+    # --- 4.5 建活用形索引（让「食べた」也能查到「食べる」）---------------
+    print()
+    print("[4.5/5] 建活用形索引")
+    try:
+        import subprocess
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "build_inflection_index.py"),
+             "--db", str(DB)],
+            capture_output=True, text=True, encoding="utf-8", errors="replace")
+        tail = [ln for ln in (r.stdout or "").splitlines() if ln.startswith("[+") or ln.startswith("[i] inflected")]
+        for ln in tail[-2:]:
+            print("    " + ln)
+        if r.returncode != 0:
+            print("    ! 建索引失败（不影响查词，活用反查会跳过）")
+    except Exception as e:
+        print(f"    ! 跳过：{e}")
+
     # --- 5. 汇总 --------------------------------------------------------
     step(5, total_steps, "校验")
     conn = sqlite3.connect("file:%s?mode=ro" % DB.as_posix(), uri=True)

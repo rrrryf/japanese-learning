@@ -345,13 +345,40 @@ def search(q: str, limit: int = 10) -> list[dict[str, Any]]:
     rows = conn.execute(
         "SELECT DISTINCT seq FROM word_forms WHERE word_form = ?", (q,)
     ).fetchall()
-    if not rows:
-        rows = conn.execute(
-            "SELECT DISTINCT seq FROM word_forms WHERE word_form LIKE ? || '%' LIMIT ?",
-            (q, limit),
-        ).fetchall()
-    else:
+    inflection = None
+    exact_hit = bool(rows)
+    if exact_hit:
         rows = rows[:limit]
+
+    # 活用形反查：查「食べた」「行った」这类变形时词库只存辞书形。
+    # 顺序上排在「精确」之后、「前缀」之前 —— 前缀会把「行った」匹配到
+    # 「行ったり来たり」这种长词条，反而盖掉真正的辞书形。
+    # inflected 由 scripts/build_inflection_index.py 预生成（假名形 + 汉字形）。
+    if not exact_hit:
+        try:
+            hits = conn.execute(
+                "SELECT i.seq AS seq, i.base AS base, i.kind AS kind, "
+                "       COALESCE(j.level, 'ZZ') AS lv "
+                "  FROM inflected i "
+                "  LEFT JOIN jlpt j ON j.word_form = i.base "
+                " WHERE i.form = ? "
+                " ORDER BY CASE COALESCE(j.level,'ZZ') "
+                "   WHEN 'N5' THEN 0 WHEN 'N4' THEN 1 WHEN 'N3' THEN 2 "
+                "   WHEN 'N2' THEN 3 WHEN 'N1' THEN 4 ELSE 9 END "
+                " LIMIT 1",
+                (q,),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            # 旧库没有 inflected 表（还没跑 build_inflection_index.py），跳过这一层
+            hits = None
+        if hits:
+            rows = [{"seq": hits["seq"]}]
+            inflection = {"form": q, "base": hits["base"], "kind": hits["kind"]}
+        else:
+            rows = conn.execute(
+                "SELECT DISTINCT seq FROM word_forms WHERE word_form LIKE ? || '%' LIMIT ?",
+                (q, limit),
+            ).fetchall()
 
     results: list[dict[str, Any]] = []
     seen: set[int] = set()
@@ -362,8 +389,36 @@ def search(q: str, limit: int = 10) -> list[dict[str, Any]]:
         cand = _candidate_from_seq(conn, seq, query=q)
         if not cand:
             continue
+        if inflection and not results:
+            # 让前端提示「食べた ← 食べる（た形）」
+            cand["inflection"] = inflection
         seen.add(seq)
         results.append(cand)
+
+    # 精确命中了一种「形同活用形的独立词条」时（例如「来た」既是感叹词
+    # "all right!"，又是 来る 的た形），把活用反查的结果补在后面，
+    # 让用户两种解释都能看到。
+    if exact_hit and results:
+        try:
+            dup = conn.execute(
+                "SELECT i.seq AS seq, i.base AS base, i.kind AS kind "
+                "  FROM inflected i LEFT JOIN jlpt j ON j.word_form = i.base "
+                " WHERE i.form = ? "
+                " ORDER BY CASE COALESCE(j.level,'ZZ') "
+                "   WHEN 'N5' THEN 0 WHEN 'N4' THEN 1 WHEN 'N3' THEN 2 "
+                "   WHEN 'N2' THEN 3 WHEN 'N1' THEN 4 ELSE 9 END "
+                " LIMIT 1",
+                (q,),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            dup = None
+        if dup and int(dup["seq"]) not in seen:
+            extra = _candidate_from_seq(conn, int(dup["seq"]), query=q)
+            if extra:
+                extra["inflection"] = {"form": q, "base": dup["base"],
+                                       "kind": dup["kind"]}
+                seen.add(int(dup["seq"]))
+                results.append(extra)
 
     remaining = limit - len(results)
     # 中文反查的条件：
