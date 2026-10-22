@@ -38,6 +38,8 @@ python setup_data.py
 
 ### 可选：本地讲解模型
 
+> **这一步可以跳过。** 不装 Ollama 也能正常查词、看语法、做模考；只是词条页的「本地讲解」按钮会提示本机未响应。Ollama 与模型（`qwen2.5:7b` 约 4.7 GB）只影响讲解功能。
+
 ```powershell
 # 先安装 Ollama（https://ollama.com），然后
 ollama pull qwen2.5:7b
@@ -61,11 +63,11 @@ ollama pull qwen2.5:7b
 | 语法 | 100 条句型（N5–N1 各 20 条示例），接续/释义/例句 | 仓库内 `data/openjlpt_grammar_*.json` |
 | 模考 | 词汇 / 文法 / 读解专项，交卷后进「薄弱点复盘」 | 仓库内 `web/data/mock_exams/`（示例卷） |
 | 薄弱点 | 按科目统计正确率，反哺每日计划 | 本地练习日志 |
-| 本地讲解 | 词条/语法详情页「本地讲解」按钮 → Ollama | 本机 Ollama |
+| 本地讲解（**可选**） | 词条/语法详情页「本地讲解」按钮 → Ollama。**不装不影响上面任何功能** | 本机 Ollama |
 
 ### 关于示例卷
 
-`web/data/mock_exams/` 目前提供 **N2、N3 各一套示例卷**，用于演示刷题与复盘流程。N1 / N4 / N5 为空（下拉会显示「暂无症状卷」）。按同样 JSON 格式可自行增补：
+`web/data/mock_exams/` 提供 **N5–N1 各一套示例卷**（每套 4–13 题），用于演示刷题与复盘流程。按同样 JSON 格式可自行增补：
 
 ```
 web/data/mock_exams/

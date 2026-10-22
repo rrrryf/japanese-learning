@@ -1269,7 +1269,10 @@
       if (!res.ok) {
         const detail =
           (data && (data.detail || data.message)) ||
-          (res.status === 503 ? "本机 Ollama 未响应" : "请求失败");
+          (res.status === 503
+            ? "本机 Ollama 未响应。AI 讲解是可选的，不影响查词 / 语法 / 模考；" +
+              "要用请先安装 Ollama 并执行 ollama pull qwen2.5:7b"
+            : "请求失败");
         const err = document.createElement("div");
         err.className = "ai-msg ai-error";
         err.textContent = String(detail);
@@ -1398,7 +1401,10 @@
       if (!res.ok) {
         const detail =
           (data && (data.detail || data.message)) ||
-          (res.status === 503 ? "本机 Ollama 未响应" : "请求失败");
+          (res.status === 503
+            ? "本机 Ollama 未响应。AI 讲解是可选的，不影响查词 / 语法 / 模考；" +
+              "要用请先安装 Ollama 并执行 ollama pull qwen2.5:7b"
+            : "请求失败");
         const err = document.createElement("div");
         err.className = "ai-msg ai-error";
         err.textContent = String(detail);
