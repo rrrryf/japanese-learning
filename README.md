@@ -300,5 +300,11 @@ Ollama 没启动，或没有对应模型。先 `ollama serve`，再 `ollama pull
 
 ## License
 
-- **代码**：可按作品集用途使用
+- **代码**：MIT（见 [LICENSE](LICENSE)）
 - **数据**：各自遵循上表所列上游协议（JMdict 部分为 CC-BY-SA 4.0）
+
+## 更新记录
+
+每个版本做了什么、修了什么问题、性能变化多少，都记在 [CHANGELOG.md](CHANGELOG.md)。
+当前版本 **v1.1.0**（语法 930 条 / 例句 409 条 / 中文覆盖率 98%）。
+
