@@ -334,6 +334,22 @@ def _search_gloss_en(
     return out
 
 
+def _jlpt_rank(conn: sqlite3.Connection, seq: int) -> int:
+    """词条的 JLPT 等级权重：N5 = 0 … N1 = 4，无等级 = 9（越靠前越常用）。"""
+    try:
+        row = conn.execute(
+            "SELECT j.level AS lv FROM jlpt j "
+            "  JOIN word_forms w ON w.word_form = j.word_form "
+            " WHERE w.seq = ? AND j.level IS NOT NULL LIMIT 1",
+            (int(seq),),
+        ).fetchone()
+    except sqlite3.OperationalError:
+        return 9
+    if not row or not row["lv"]:
+        return 9
+    return {"N5": 0, "N4": 1, "N3": 2, "N2": 3, "N1": 4}.get(row["lv"], 9)
+
+
 def search(q: str, limit: int = 10) -> list[dict[str, Any]]:
     """Exact then prefix JP search; fill with Chinese (and Latin→EN) reverse hits."""
     q = (q or "").strip()
@@ -396,8 +412,9 @@ def search(q: str, limit: int = 10) -> list[dict[str, Any]]:
         results.append(cand)
 
     # 精确命中了一种「形同活用形的独立词条」时（例如「来た」既是感叹词
-    # "all right!"，又是 来る 的た形），把活用反查的结果补在后面，
-    # 让用户两种解释都能看到。
+    # "all right!"，又是 来る 的た形），把活用反查的结果也放进来。
+    # 排序看 JLPT 等级：命中词条是冷僻词（无等级）而活用辞书形是常用词时，
+    # 把辞书形提到前面；两个都常用就保持精确优先。
     if exact_hit and results:
         try:
             dup = conn.execute(
@@ -418,7 +435,11 @@ def search(q: str, limit: int = 10) -> list[dict[str, Any]]:
                 extra["inflection"] = {"form": q, "base": dup["base"],
                                        "kind": dup["kind"]}
                 seen.add(int(dup["seq"]))
-                results.append(extra)
+                if _jlpt_rank(conn, extra["seq"]) < _jlpt_rank(conn, results[0]["seq"]):
+                    results.insert(0, extra)
+                    extra["inflection"]["demoted"] = q
+                else:
+                    results.append(extra)
 
     remaining = limit - len(results)
     # 中文反查的条件：

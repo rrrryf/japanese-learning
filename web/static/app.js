@@ -1153,6 +1153,7 @@
       const inflTag = infl
         ? `<span class="cand-infl" title="这个词是活用形，点进去看辞书形">` +
           `${escapeHtml(infl.form)} ← ${escapeHtml(infl.base)}（${escapeHtml(infl.kind)}）` +
+          (infl.demoted ? " · 更常用" : "") +
           `</span>`
         : "";
       li.innerHTML = `
