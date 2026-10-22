@@ -1,5 +1,10 @@
 # 日语学习
 
+[![tests](https://github.com/rrrryf/japanese-learning/actions/workflows/tests.yml/badge.svg)](https://github.com/rrrryf/japanese-learning/actions/workflows/tests.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![offline](https://img.shields.io/badge/data-100%25%20local-success)]()
+
 本地推理优先的日语学习应用：**词典 + 语法 + JLPT 模考 + 薄弱点复盘**，可选接入 Ollama 本地小模型做按需讲解。
 
 > 个人 JLPT 备考工具 / 作品集项目。默认不依赖任何云端 API。
