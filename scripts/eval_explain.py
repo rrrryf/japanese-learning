@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Sample grammar items, call local Ollama (tinyswallow) for short explains,
+Sample grammar items, call local Ollama (qwen2.5:7b) for short explains,
 save JSON with human score placeholders (accuracy / usefulness 1–5).
 
 Usage (from project root):
@@ -107,7 +107,7 @@ def run_one(item: dict) -> dict:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Eval tinyswallow grammar explains")
+    ap = argparse.ArgumentParser(description="Eval local model grammar explains")
     ap.add_argument("--limit", type=int, default=10, help="How many items (default 10)")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--out", type=str, default="", help="Output JSON path")
@@ -118,7 +118,7 @@ def main() -> None:
     if not status.get("ok"):
         raise SystemExit(
             f"Ollama model not ready (model={status.get('model')}). "
-            "Run: ollama pull tinyswallow"
+            "Run: ollama pull qwen2.5:7b"
         )
 
     items = sample_grammar(limit, seed=args.seed)

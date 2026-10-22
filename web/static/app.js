@@ -1,5 +1,36 @@
-/* Rao · Japanese dictionary SPA + flashcard study + daily plan */
+/* Japanese dictionary SPA + flashcard study + daily plan */
 (() => {
+  // 词典库缺失时后端返回 503。这里统一拦一次，把「加载失败」变成一句可操作的提示。
+  const rawFetch = window.fetch.bind(window);
+  let setupBannerShown = false;
+  window.fetch = async (...args) => {
+    const res = await rawFetch(...args);
+    if (res.status === 503 && !setupBannerShown) {
+      setupBannerShown = true;
+      const banner = document.getElementById("setup-banner");
+      if (banner) banner.hidden = false;
+    }
+    return res;
+  };
+
+  const setupBannerClose = document.getElementById("setup-banner-close");
+  if (setupBannerClose) {
+    setupBannerClose.addEventListener("click", () => {
+      const banner = document.getElementById("setup-banner");
+      if (banner) banner.hidden = true;
+    });
+  }
+
+  // 启动时探一次词库状态：缺 jmdict.db 时后端返回 503，直接把提示条亮出来，
+  // 不用等用户点进查词页才发现「加载失败」。
+  rawFetch("/api/jlpt/counts")
+    .then((res) => {
+      if (res.status === 503) {
+        const banner = document.getElementById("setup-banner");
+        if (banner) banner.hidden = false;
+      }
+    })
+    .catch(() => {});
   const FAV_KEY = "jmdict_favorites_v1";
   const STUDY_KEY = "jmdict_study_v1";
   const DAILY_KEY = "jmdict_daily_v1";
@@ -731,9 +762,9 @@
   }
 
   // ---- 模考富文本白名单清洗 ----------------------------------------------
-  // 后端 在线题库.py:_strip_scripts() 是正则黑名单，`\s+on[a-z]+\s*=` 要求 on 前有
-  // 空白，`<svg/onload=alert(1)>` 用 `/` 分隔即可整体绕过；<style>/<form> 也不在
-  // 移除名单里。模考题干/原文/翻译/解析都是第三方 HTML，进 innerHTML 前必须逐节点
+  // 后端清洗是正则黑名单，`\s+on[a-z]+\s*=` 要求 on 前有空白，
+  // `<svg/onload=alert(1)>` 用 `/` 分隔即可整体绕过；<style>/<form> 也不在
+  // 移除名单里。模考题干/原文/翻译/解析都是外部 HTML，进 innerHTML 前必须逐节点
   // 重建：<template> 惰性解析不会执行脚本、不会加载资源，只留白名单标签与属性。
   const EXAM_ALLOW_TAGS = new Set([
     "B", "STRONG", "I", "EM", "U", "S", "DEL", "INS", "BR", "P", "DIV", "SPAN",
@@ -1201,7 +1232,7 @@
     const loading = document.createElement("div");
     loading.className = "ai-msg ai-loading";
     loading.id = "ai-loading-msg";
-    loading.textContent = "本地 AI（tinyswallow）思考中…";
+    loading.textContent = "本地 AI 思考中…";
     box.appendChild(loading);
     box.scrollTop = box.scrollHeight;
 
@@ -1330,7 +1361,7 @@
     const loading = document.createElement("div");
     loading.className = "ai-msg ai-loading";
     loading.id = "g-ai-loading-msg";
-    loading.textContent = "本地 AI（tinyswallow）思考中…";
+    loading.textContent = "本地 AI 思考中…";
     box.appendChild(loading);
     box.scrollTop = box.scrollHeight;
 
@@ -1593,10 +1624,6 @@
               : ""
           }
           ${tags ? `<div class="tags">${tags}</div>` : ""}
-          <div class="ld-audio">
-            <button type="button" class="ld-audio-btn" id="btn-audio" aria-label="播放发音">🔊 发音</button>
-            <audio id="ld-audio-el" preload="none"></audio>
-          </div>
         </header>
 
         <section class="ld-section">
@@ -1613,7 +1640,7 @@
           <h2 class="ld-section-title">AI</h2>
           <div class="ai-wrap">
             <div class="ai-head">
-              <span class="ai-head-title">本地讲解 · tinyswallow</span>
+              <span class="ai-head-title">本地讲解</span>
               <button type="button" class="ai-btn ghost" id="btn-ai-auto">本地讲解</button>
             </div>
             <div id="ai-chat" class="ai-chat" aria-live="polite"></div>
@@ -1653,35 +1680,7 @@
       btn.textContent = on ? "★ 已收藏" : "☆ 收藏";
     });
 
-    bindDetailAudio(data.seq);
     bindWordAiControls();
-  }
-
-  // 发音：首次点击才请求 /api/audio/{seq}（服务端落盘后永久离线可用）。
-  // 拿不到音频就整块隐藏——不打扰阅读。
-  function bindDetailAudio(seq) {
-    const audioBtn = document.getElementById("btn-audio");
-    const audioEl = document.getElementById("ld-audio-el");
-    if (!audioBtn || !audioEl) return;
-    audioEl.addEventListener(
-      "error",
-      () => {
-        const wrap = audioBtn.closest(".ld-audio");
-        if (wrap) wrap.hidden = true;
-      },
-      { once: true }
-    );
-    audioBtn.addEventListener("click", () => {
-      if (!audioEl.getAttribute("src")) {
-        audioEl.src = `/api/audio/${encodeURIComponent(seq)}`;
-      }
-      try {
-        audioEl.currentTime = 0;
-        audioEl.play().catch(() => {});
-      } catch (_) {
-        /* 播放被拒绝时静默 */
-      }
-    });
   }
 
   async function renderFavorites() {
@@ -1971,7 +1970,7 @@
           <h2 class="ld-section-title">AI</h2>
           <div class="ai-wrap">
             <div class="ai-head">
-              <span class="ai-head-title">本地讲解 · tinyswallow</span>
+              <span class="ai-head-title">本地讲解</span>
               <button type="button" class="ai-btn ghost" id="btn-g-ai-auto">本地讲解</button>
             </div>
             <div id="g-ai-chat" class="ai-chat" aria-live="polite"></div>

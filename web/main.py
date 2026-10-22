@@ -25,7 +25,6 @@ from ai_ollama import (
     OLLAMA_MODEL,
 )
 import mock_exam
-import audio_module
 from weakness import analyze_log_dir, analyze_sessions, load_sessions, save_session
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -188,34 +187,6 @@ def api_word(seq: int):
     if data is None:
         raise HTTPException(status_code=404, detail="word not found")
     return data
-
-
-@app.get("/api/audio/{seq}")
-def api_audio(seq: int, voice: str = Query(audio_module.DEFAULT_VOICE)):
-    """Word audio. The first request downloads an mp3; later requests stay local."""
-    if voice not in audio_module.VOICES:
-        raise HTTPException(status_code=400, detail="unsupported voice")
-    data = get_word_cached(seq)
-    if data is None:
-        raise HTTPException(status_code=404, detail="word not found")
-    kanji = data.get("kanji") or []
-    kana = data.get("kana") or []
-    form = (kanji[0] if kanji else (kana[0] if kana else "")).strip()
-    if not form:
-        raise HTTPException(status_code=404, detail="word has no readable form")
-    path = audio_module.fetch_cached(form, voice)
-    if path is None:
-        raise HTTPException(status_code=404, detail="audio unavailable")
-    return FileResponse(
-        path,
-        media_type="audio/mpeg",
-        headers={"Cache-Control": "public, max-age=604800"},
-    )
-
-
-@app.get("/api/audio-status")
-def api_audio_status():
-    return audio_module.audio_status()
 
 
 @app.post("/api/cache/clear")

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Local Ollama helper for word/grammar explanations (default: tinyswallow)."""
+"""Local Ollama helper for word/grammar explanations (default: qwen2.5:7b)."""
 from __future__ import annotations
 
 import json
@@ -10,7 +10,7 @@ import urllib.request
 from typing import Any
 
 OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "http://127.0.0.1:11434").rstrip("/")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "tinyswallow")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
 
 
 def _env_timeout() -> int:
@@ -33,7 +33,7 @@ class OllamaError(Exception):
 
 
 def _model_listed(names: list[str], wanted: str) -> bool:
-    """Match tinyswallow against tinyswallow:latest etc."""
+    """Match "qwen2.5:7b" against "qwen2.5:7b" / "qwen2.5:7b-instruct-q4_K_M" etc."""
     w = (wanted or "").strip()
     if not w:
         return False

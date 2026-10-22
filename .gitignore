@@ -5,18 +5,19 @@ __pycache__/
 venv/
 *.egg-info/
 
-# Secrets / local
+# Secrets / local（本地凭据与个人配置不进库）
 .env
 .env.*
-在线题库_config.json
-**/在线题库_config.json
-web/在线题库.py
-web/cache/在线题库/
+*.local.json
+*.secret*
+**/config.local.*
 web/cache/audio/
 
 # Large / personal
 jmdict.db
 jmdict.db.*
+JMdict_e.xml
+JMdict_e.gz
 *.db.bak*
 *.bak
 *.bak-*

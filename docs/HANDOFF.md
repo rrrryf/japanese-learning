@@ -12,9 +12,9 @@
 
 ```
 本地 JMdict SQLite（218,908 词条）  → 查词 / 活用 / 罗马音 / 例句
-本地语法库（887 条）                → 句型检索 / 分级浏览
+本地语法库（仓库内示例 100 条）                → 句型检索 / 分级浏览
 真题模块（需要自备数据源凭据）      → JLPT 题目 / 选项 / 答案 / 解析 / 听力音频
-本机 Ollama（默认 tinyswallow）     → 词条与语法的 AI 讲解
+本机 Ollama（默认 qwen2.5:7b）     → 词条与语法的 AI 讲解
 练习日志（jsonl）                   → 做题记录 → 薄弱点复盘
 ```
 
@@ -62,7 +62,7 @@ jmdict/
 ```
 Python 3.13（venv 在 web/.venv）
 Node 24（仅用于前端语法检查与测试）
-Ollama  http://127.0.0.1:11434，模型默认 tinyswallow
+Ollama  http://127.0.0.1:11434，模型默认 qwen2.5:7b
         （OLLAMA_MODEL / OLLAMA_BASE / OLLAMA_TIMEOUT 可覆盖）
 ```
 
@@ -221,6 +221,34 @@ hash 路由：`#/`（查词）`#/word/{seq}`（词条）`#/study`（背单词）
 
 `list_jlpt` 的 `ORDER BY RANDOM()` 原计划改哈希抽样。实测加索引后 3.4 ms vs 3.1 ms，**差 0.3 ms**，不值得引入 seed 管理与行为差异 → 保持原样。
 
+### 2.10 安全与鲁棒性测试发现并修复的 6 项（2026-10-22）
+
+三轮测试（63 项功能/边界/并发 + 19 项安全面深挖），发现并修掉 6 个真实缺陷，最终 **63/63 + 0 FAIL**。
+
+| ID | 缺陷 | 现象 | 修复 |
+|---|---|---|---|
+| R-01 | 整数溢出 → 500 | `/api/word/2^63`、`/api/audio/2^63`、`/api/grammar/2^63`、40 位数字 id 全部返回 `500 Internal Server Error`。根因：Python 无限精度 int 超出 SQLite int64，绑定时抛 `OverflowError`，它不属于 `sqlite3.Error`，全局 handler 接不住 | 定义 `MAX_INT64 = 2**63 - 1`，所有 URL 整数参数改为 `ApiPath(..., ge=0, le=MAX_INT64)` → 422 |
+| R-02 | 任意试卷 id 直通外部接口（请求放大器） | `GET /api/exam/<任意字符串>` 每次都会真实请求外部（约 200 ms），未认证者可无限刷、消耗对方配额；`GET /api/exam/log` 本该 405，却被 `{exam_id}` 路由吞掉返回 502 | 试卷 id 加 `^[A-Za-z0-9_-]{1,64}$` 校验（非法 → 400）+ 保留名 `log/logs/list` → 405 + 真题模块加 **5 分钟负缓存**（结构拉取失败也写入） |
+| R-03 | 缺安全响应头 | 无 CSP / X-Frame-Options / X-Content-Type-Options / Referrer-Policy | 加 `@app.middleware("http")` 统一注入。`index.html` 无内联脚本，故 `script-src` 收紧到 `'self'` |
+| R-04 | **CSRF：POST 端点不校验 Content-Type** | `/api/weakness/analyze`、`/api/exam/log` 用裸 `request.body()` 读字节再 `json.loads`，所以 `text/plain`、`form-urlencoded`、无 Content-Type 全都接受。这类是浏览器「简单请求」，跨站表单不触发预检即可发送 → 任意网页能往本机 API 注入数据（伪造练习记录、清缓存） | 新增 `_require_json()`：Content-Type 必须 `application/json`，否则 **415**；`/api/cache/clear` 同样加固 |
+| R-05 | 无 Host 头校验（DNS rebinding） | `Host: evil.example.com` 返回 200。攻击者把自有域名解析到 127.0.0.1，浏览器即可绕过同源策略读本机 API（含做题记录） | 中间件加回环白名单 `{127.0.0.1, localhost, ::1}`，其它 Host → **400** |
+| R-06 | 并发首次拉同一卷子放大外部请求 | 8 并发首次请求 → **8 次真实外部拉取**（wall 2022 ms，各自 1.6–2.0 s） | 真题模块加 per-id 锁（singleflight）：只让一个线程真打外部，其余等落盘读缓存。8 并发 → **1 次外部**，wall **2022 → 1030 ms** |
+
+**验证数据**
+
+- 溢出类 4 个端点：500 → **422**
+- `GET /api/exam/<坏 id>` 连续 4 次：**258 ms → 7 ms → 2 ms → 2 ms**（负缓存生效）
+- CSRF：`text/plain` / `form-urlencoded` / 无 Content-Type → **415**；`application/json` → 200
+- Host：非回环域名 → **400**；`127.0.0.1` / `localhost` → 200
+- 并发拉卷：8 并发 wall **2022 → 1030 ms**，外部请求 8 → 1 次
+- 正常卷子：55 ms / 130,468 bytes（无回归）
+- 首页与答题页在 CSP 下渲染正常（无白屏）
+- 并发 50×search / 30×word / 50×grammar-counts / 20×jlpt：**0 错误**，p95 ≤ 399 ms
+
+**确认健壮、无需改动**：SQLi 4 种 payload 全无效（全参数化）；路径穿越 4 变体全 404；3MB body → 413；错误响应不含 traceback / SQL / 绝对路径；`/static/` 不列目录；文件名注入被转义；音频支持 Range（206）。
+
+**仍开放**：`LIKE` 通配符未转义（`q=%` 匹配全部词条，被 limit 截断，不慢不崩）；后端 HTML 白名单收口（FIX-03 后半）；AI 端点串行排队（FIX-08，实测 3 并发 2.4→6.7 s，行为正确但占线程）。
+
 ---
 
 ## 3. 待办清单（16 项）
@@ -238,14 +266,17 @@ hash 路由：`#/`（查词）`#/word/{seq}`（词条）`#/study`（背单词）
 
 **FIX-02 · `static/*.bak` 可被 HTTP 下载**
 
-历史备份放在 `StaticFiles` 挂载目录里，例如 `/static/app.js.bak-pre-tinyswallow` 可被任意人取走。
+历史备份放在 `StaticFiles` 挂载目录里，例如 `/static/app.js.bak-pre-old` 可被任意人取走。
 **做法**：移到 `web/_archive/`。**验收**：该 URL 返回 404，`static/` 下无 `*.bak*`。
 
-**FIX-03 · 后端仍黑名单 + 无 CSP**
+**FIX-03 · 后端仍是黑名单（CSP 已随 R-03 完成）**
 
-前端白名单是唯一防线。
-**做法**：后端在清洗函数出口追加一次白名单收口（`lxml` 已在环境里）；`main.py` 加中间件设置 `Content-Security-Policy: default-src 'self'; img-src 'self' https: data:; media-src 'self' https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'`。
-**验收**：`test_sanitize.mjs` 仍 15/15；`curl -I /` 有 CSP 头；Console 无 CSP 报错。
+前端白名单是唯一防线；后端清洗函数仍可被 `<svg/onload>` 绕过。
+
+- **已完成**：`security_headers` 中间件已注入 CSP / X-Frame-Options / nosniff / Referrer-Policy，`curl -I /` 可验证
+- **待做**：在清洗函数出口追加 `lxml` 白名单收口
+
+**验收**：前端 15 个 XSS 用例仍全过；后端单测断言 `<svg/onload=alert(1)>x` 的输出不含 `onload` 且保留 `x`。
 
 ### P1 · 体感与架构
 
@@ -334,7 +365,7 @@ async function fetchWords(seqs) {
 | `examples` | 32,428 | `id` `jpn` `cmn` |
 | `gloss_zh` | 23,101 | `word_form` `accent` `gloss` |
 | `jlpt` | 8,138 | `word_form` `level` |
-| `grammar` | 887 | `id` `pattern` `explain` `level` `connection` |
+| `grammar` | 100 | `id` `pattern` `explain` `level` `connection` |
 
 ### 4.2 索引
 

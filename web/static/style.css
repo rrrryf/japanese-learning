@@ -2645,27 +2645,41 @@ body.detail-screen .shell {
   }
 }
 
-/* 词条发音：详情页头部的一行小按钮，音频元素本身不占位 */
-.ld-audio {
-  margin-top: 10px;
-}
-.ld-audio-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+/* 词典库未就绪提示条 */
+.setup-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 auto;
+  max-width: var(--app-max);
+  padding: 12px var(--content-pad);
+  background: #fff8e6;
+  border-bottom: 1px solid #f0d9a8;
+  color: #7a5200;
   font-size: 14px;
-  color: var(--text);
-  background: var(--fill);
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  line-height: 1.6;
+}
+.setup-banner-body {
+  flex: 1;
+}
+.setup-banner code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f6e6c3;
+  font-size: 13px;
+}
+.setup-banner-close {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #7a5200;
+  font-size: 18px;
+  line-height: 1;
   cursor: pointer;
 }
-.ld-audio-btn:hover {
-  background: var(--primary-soft);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-.ld-audio audio {
-  display: none;
+.setup-banner-close:hover {
+  background: #f6e6c3;
 }

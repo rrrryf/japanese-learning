@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Rao · 日语词典</title>
+  <title>日语词典 · JLPT 学习</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="app">
     <header class="appbar">
-      <a class="brand" href="#/" id="brand-link">Rao</a>
+      <a class="brand" href="#/" id="brand-link">词典</a>
       <nav class="appbar-nav">
         <a href="#/" id="nav-search" class="nav-btn">查词</a>
         <a href="#/study" id="nav-study" class="nav-btn">背单词</a>
@@ -19,6 +19,14 @@
         <a href="#/favorites" id="nav-fav" class="nav-btn">☆ 生词本</a>
       </nav>
     </header>
+
+    <div id="setup-banner" class="setup-banner" hidden>
+      <div class="setup-banner-body">
+        <strong>词典库未就绪</strong>：查词和语法需要 <code>jmdict.db</code>。
+        在项目根目录运行 <code>python setup_data.py</code>（会自动下载词库），然后重启服务。
+      </div>
+      <button type="button" class="setup-banner-close" id="setup-banner-close" aria-label="关闭提示">×</button>
+    </div>
 
     <main class="shell">
       <section id="view-search" class="view view-search">
