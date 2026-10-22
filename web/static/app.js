@@ -1953,7 +1953,7 @@
       ? `<ul class="grammar-examples">${examples
           .map((ex) => {
             const ja = escapeHtml(ex.ja || "");
-            const en = escapeHtml(ex.en || "");
+            const en = escapeHtml(ex.zh || ex.en || "");
             return (
               `<li><div class="ge-ja">${ja}</div>` +
               (en ? `<div class="ge-en">${en}</div>` : "") +

@@ -59,6 +59,12 @@ conn.execute("CREATE TABLE jlpt (word_form TEXT PRIMARY KEY, level TEXT)")
 conn.execute("CREATE TABLE gloss_zh (word_form TEXT PRIMARY KEY, accent TEXT, gloss TEXT)")
 conn.execute("CREATE TABLE examples (id INTEGER PRIMARY KEY, jpn TEXT, cmn TEXT)")
 conn.execute("CREATE INDEX idx_examples_jpn ON examples(jpn)")
+# 例句子串查询走这张表。trigram 只索引 3 字及以上；建库时 examples 还是空的，
+# setup_data.py 导入例句后再 rebuild。
+conn.execute(
+    "CREATE VIRTUAL TABLE examples_fts USING fts5("
+    "jpn, content='examples', content_rowid='id', tokenize='trigram')"
+)
 
 count = 0
 e_buf: list[tuple] = []

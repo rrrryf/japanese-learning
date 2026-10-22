@@ -69,7 +69,7 @@ python setup_data.py
 |---|---|
 | 下载词库 | 从 EDRDG 拉 `JMdict_e.gz`（约 30MB）并解压成 `JMdict_e.xml` |
 | 建 SQLite | 调用 `build_db.py` 生成 `jmdict.db`（词条 / 义项 / 词形，约 80MB） |
-| 导入语法 | 把仓库内 `data/openjlpt_grammar_n1..n5.json` 导入 `grammar` 表（N5–N1 各 20 条，共 100 条） |
+| 导入语法 | openjlpt 100 条 + thesaurus 830 条 → `grammar` 表（共 930 条，五级均有） |
 | 校验 | 打印各表行数，确认接口可用 |
 
 脚本幂等，可重复运行。如果网络受限，也可以手动下载 `JMdict_e.xml` 放到项目根目录后再跑一次。
@@ -100,7 +100,7 @@ ollama pull qwen2.5:7b
 | 模块 | 说明 | 数据来源 |
 |---|---|---|
 | 词典 | 日文/假名/中文反查、活用表、罗马音 | JMdict（本地 SQLite） |
-| 语法 | 100 条句型（N5–N1 各 20 条示例），接续 / 中文释义 / 英文释义 / 每条约 2 个例句 | 仓库内 `data/openjlpt_grammar_*.json` |
+| 语法 | **930 条句型**，接续 / 中文释义 / 英文释义 / 部分带双语例句 | `data/openjlpt_grammar_*.json` + `data/grammar_extra.jsonl.gz` |
 | 模考 | 词汇 / 文法 / 读解专项，交卷后进「薄弱点复盘」 | 仓库内 `web/data/mock_exams/`（示例卷） |
 | 本地题库导入 | 真题页上传 `.json` 卷子（可多选 / 拖拽），存在本机、可删除 | 本地文件 |
 | 薄弱点 | 按科目统计正确率，反哺每日计划 | 本地练习日志 |
@@ -155,7 +155,7 @@ web/data/mock_exams/
 | 表 | 内容 | 来源 |
 |---|---|---|
 | `entries` / `senses` / `word_forms` | 218,945 词条 / 253,841 义项 / 499,554 词形 | JMdict（本机下载生成，约 80 MB） |
-| `grammar` | 100 条语法（N5–N1 各 20） | `data/openjlpt_grammar_*.json` |
+| `grammar` | **930 条语法**（N5 159 / N4 114 / N3 122 / N2 80 / N1 43，其余未分级） | `openjlpt_grammar_*.json` 100 条 + `grammar_extra.jsonl.gz` 830 条 |
 | `jlpt` | 8,138 条分级词表 | `data/jlpt_words.jsonl.gz`（37 KB） |
 | `gloss_zh` | 23,101 条中文释义 + 音调 | `data/gloss_zh.jsonl.gz`（346 KB，上游 thesaurus） |
 | 　└ 补充 | +1,421 条（填 JLPT 词表缺口） | `data/gloss_zh_extra.jsonl.gz`（14 KB，本机模型翻译） |
@@ -263,7 +263,8 @@ Ollama 没启动，或没有对应模型。先 `ollama serve`，再 `ollama pull
 | 中文释义 / 音调 | [Japanese-Chinese-thesaurus](https://github.com/lxl66566/Japanese-Chinese-thesaurus)（lxl66566） | **The Unlicense**（公有领域） |
 | 双语例句 | [Tatoeba](https://tatoeba.org/)（CC-BY 2.0 FR） | **CC-BY 2.0 FR** |
 | JLPT 分级词表 | 依据 JLPT 官方出题基准整理 | 事实性数据，无版权限制 |
-| 语法条目（`data/openjlpt_grammar_*.json`） | 本项目整理 | 随本项目 |
+| 语法条目 `openjlpt_grammar_*.json`（100 条） | 本项目整理 | 随本项目 |
+| 语法条目 `grammar_extra.jsonl.gz`（830 条） | [Japanese-Chinese-thesaurus](https://github.com/lxl66566/Japanese-Chinese-thesaurus) | **The Unlicense**（公有领域） |
 | 模考题目（`web/data/mock_exams/`） | 本项目自建示例 | 随本项目 |
 
 ### 两点要注意

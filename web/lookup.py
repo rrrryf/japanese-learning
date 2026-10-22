@@ -414,6 +414,29 @@ def _ordered_conjugations(raw: dict[str, str]) -> dict[str, str]:
     return out
 
 
+def _example_hit_rows(conn: sqlite3.Connection, form: str, limit: int):
+    """例句命中行。
+
+    examples_fts 用 trigram，三字及以上走 MATCH。
+    更短的词形 trigram 不会命中，仍用 instr。
+    索引不存在时退回 instr，避免旧库直接 500。
+    """
+    if len(form) >= 3:
+        try:
+            return conn.execute(
+                "SELECT e.jpn AS jpn, e.cmn AS cmn FROM examples_fts "
+                "JOIN examples e ON e.id = examples_fts.rowid "
+                "WHERE examples_fts MATCH ? LIMIT ?",
+                ('"' + form.replace('"', '""') + '"', limit),
+            ).fetchall()
+        except sqlite3.OperationalError:
+            pass
+    return conn.execute(
+        "SELECT jpn, cmn FROM examples WHERE instr(jpn, ?) > 0 LIMIT ?",
+        (form, limit),
+    ).fetchall()
+
+
 def _fetch_examples(
     conn: sqlite3.Connection, forms: list[str], cap: int = 15
 ) -> list[dict[str, str]]:
@@ -431,11 +454,7 @@ def _fetch_examples(
     ordered = sorted(cleaned, key=len, reverse=True)
 
     def take(form: str, limit: int, max_len: int | None = None) -> int:
-        rows = conn.execute(
-            # instr() 与 LIKE '%%x%%' 同为全扫，但省掉 LIKE 的模式解析：实测 13.7ms -> 6.3ms
-            "SELECT jpn, cmn FROM examples WHERE instr(jpn, ?) > 0 LIMIT 40",
-            (form,),
-        ).fetchall()
+        rows = _example_hit_rows(conn, form, 40)
         scored = []
         for row in rows:
             jpn = row["jpn"] or ""
@@ -477,10 +496,7 @@ def _fetch_examples(
     for form in ordered:
         if len(form) >= 2 or _has_kana(form):
             continue
-        rows = conn.execute(
-            "SELECT jpn, cmn FROM examples WHERE instr(jpn, ?) > 0 LIMIT 200",
-            (form,),
-        ).fetchall()
+        rows = _example_hit_rows(conn, form, 200)
         added = 0
         for row in rows:
             jpn = row["jpn"] or ""

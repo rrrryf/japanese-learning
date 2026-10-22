@@ -126,6 +126,46 @@ def import_grammar(conn: sqlite3.Connection) -> int:
     return total
 
 
+def import_grammar_extra(conn: sqlite3.Connection) -> int:
+    """追加导入 thesaurus 来源的语法（Japanese-Chinese-thesaurus，Unlicense）。
+
+    与上面 openjlpt 那 100 条分开存放：这里只有中文释义（写进 explain_zh），
+    没有英文原文，部分条目带例句。
+    """
+    path = DATA / "grammar_extra.jsonl.gz"
+    if not path.is_file():
+        print(f"    - 跳过 {path.name}（不存在）")
+        return 0
+    n = 0
+    with gzip.open(path, "rt", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                o = json.loads(line)
+            except ValueError:
+                continue
+            pattern = (o.get("pattern") or "").strip()
+            if not pattern:
+                continue
+            ex = o.get("examples")
+            conn.execute(
+                "INSERT INTO grammar (pattern, explain, level, connection, examples, explain_zh)"
+                " VALUES (?,?,?,?,?,?)",
+                (pattern,
+                 None,
+                 (o.get("level") or None),
+                 (o.get("connection") or None),
+                 json.dumps(ex, ensure_ascii=False) if isinstance(ex, list) and ex else None,
+                 (o.get("explain_zh") or None)),
+            )
+            n += 1
+    conn.commit()
+    print(f"    + {path.name}: {n} 条（thesaurus，Unlicense 公有领域）")
+    return n
+
+
 def import_jsonl(conn: sqlite3.Connection, table: str, path: Path, cols: list[str],
                  replace: bool = True) -> int:
     """把 data/*.jsonl.gz 导入指定表。
@@ -229,6 +269,7 @@ def main() -> int:
             conn.execute("DELETE FROM grammar")
             conn.commit()
         n = import_grammar(conn)
+        n += import_grammar_extra(conn)
         print(f"    [+] 共导入 {n} 条语法")
     finally:
         conn.close()
@@ -252,6 +293,8 @@ def main() -> int:
                      ["word_form", "accent", "gloss"], replace=False)
         import_jsonl(conn, "examples", DATA / "examples.jsonl.gz", ["jpn", "cmn"])
         conn.execute("CREATE INDEX IF NOT EXISTS idx_examples_jpn ON examples(jpn)")
+        from migrate_examples_fts import ensure_examples_fts
+        ensure_examples_fts(conn, rebuild=True)
         conn.commit()
     finally:
         conn.close()
